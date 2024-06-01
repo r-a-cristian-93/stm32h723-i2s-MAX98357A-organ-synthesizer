@@ -93,17 +93,21 @@ void generateSamples(void *pOutput, uint32_t frameCount)
 
 void clearSilencedNotes()
 {
-    for (auto it = notes_list.begin(); it != notes_list.end(); it++)
+    std::list<Note>::iterator it = notes_list.begin();
+
+    while (it != notes_list.end())
     {
         // Remove one by one in the order they were added
         if (it->envelope.GetAmplitude(g_time) <= 0 && !it->envelope.bNoteOn)
         {
-            notes_list.erase(it++);
-            break;
+            it = notes_list.erase(it);
+        }
+        else
+        {
+            ++it;
         }
     }
 }
-
 void dataCallback(void *pOutput, uint32_t frameCount)
 {
     clearSilencedNotes();
