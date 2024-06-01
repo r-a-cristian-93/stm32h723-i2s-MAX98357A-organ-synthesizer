@@ -29,8 +29,8 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
  ../Core/Inc/dma.h ../Core/Inc/main.h ../Core/Inc/i2c.h ../Core/Inc/i2s.h \
- ../Core/Inc/gpio.h ../Core/Src/Codec.h ../Core/Src/Synth.h \
- ../Core/Inc/led.h
+ ../Core/Inc/gpio.h ../Core/Src/Codec.h ../Core/Inc/led.h \
+ ../Core/Src/synth.h ../Core/Src/pitch.h ../Core/Src/llist.h
 ../Core/Inc/main.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 ../Core/Inc/stm32h7xx_hal_conf.h:
@@ -67,5 +67,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Inc/i2s.h:
 ../Core/Inc/gpio.h:
 ../Core/Src/Codec.h:
-../Core/Src/Synth.h:
 ../Core/Inc/led.h:
+../Core/Src/synth.h:
+../Core/Src/pitch.h:
+../Core/Src/llist.h:

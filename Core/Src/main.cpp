@@ -27,8 +27,18 @@
 /* USER CODE BEGIN Includes */
 
 #include "Codec.h"
-#include "Synth.h"
 #include "led.h"
+#include "synth.h"
+
+
+
+#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+#include "pitch.h"
+#include "llist.h"
+#include "synth.h"
 
 /* USER CODE END Includes */
 
@@ -52,9 +62,17 @@
 /* USER CODE BEGIN PV */
 
 Codec codec;
-Synth synth;
 
-int16_t audio_buff[BUFF_LEN];
+float_t		global_pitch;
+float_t		global_fc;
+
+uint16_t	audiobuff[BUFF_LEN];
+
+llist 		note_list = NULL;
+
+synth_params	params;
+bool			trig;
+bool			new_note_event;
 
 /* USER CODE END PV */
 
@@ -68,24 +86,24 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void make_sound(uint16_t start_index)
-{
-	for (uint16_t i = 0; i < BULL_LEN_HALF; i++)
-	{
-		float signal = synth.calculate_oscilator();
-		audio_buff[start_index + i] = (uint16_t)signal;
-		audio_buff[start_index + i + 1] = (uint16_t)signal;
-	}
-}
+//void make_sound(uint16_t start_index)
+//{
+//	for (uint16_t i = 0; i < BUFF_LEN_DIV2; i++)
+//	{
+//		float signal = synth.calculate_oscilator();
+//		audiobuff[start_index + i] = (uint16_t)signal;
+//		audiobuff[start_index + i + 1] = (uint16_t)signal;
+//	}
+//}
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-	make_sound(0);
+	Make_Sound(0);
 }
 
 void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-	make_sound(BULL_LEN_HALF);
+	Make_Sound(BUFF_LEN_DIV2);
 }
 
 /* USER CODE END 0 */
@@ -98,6 +116,50 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	int 	i;					// General purpose variable
+
+	note* 		play_note;
+
+	for (i=0; i<BUFF_LEN; i=i+2)
+	{
+		audiobuff[i] = (uint16_t)((int16_t) 0.0f);			// Left Channel value
+		audiobuff[i+1] = (uint16_t)((int16_t) 0.0f);		// Right Channel Value
+	}
+
+	// Initialize Synth
+
+	params.pitch = 220.0f;
+	params.bend = 0.0f;
+
+	params.detune = 1.0f;
+
+	params.osc1_waveform = 3;
+	params.osc2_waveform = 3;
+
+	params.osc1_octave = 1.0f;
+	params.osc2_octave = 1.0f;
+
+	params.osc1_mix = 0.2f;
+	params.osc2_mix = 0.2f;
+
+	params.cutoff = 24.0f;
+	params.reso = 1.0f;
+
+	params.adsr1_attack = 0.1f;
+	params.adsr1_decay = 0.1f;
+	params.adsr1_sustain = 0.5f;
+	params.adsr1_release = 0.1f;
+
+	params.adsr2_attack = 0.1f;
+	params.adsr2_decay = 0.1f;
+	params.adsr2_sustain = 0.5f;
+	params.adsr2_release = 0.1f;
+
+	params.lfo1_frequency = 10.0f;
+	params.lfo1_depth = 0.8f;
+
+	params.lfo2_frequency = 10.0f;
+	params.lfo2_depth = 0.8f;
 
   /* USER CODE END 1 */
 
@@ -137,17 +199,32 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  synth.pitch = 250.0f;
+//  synth.pitch = 250.0f;
+	note_list = add_note_last(note_list, 64, 124);
+	new_note_event = 1;
 
-  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
+  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audiobuff, BUFF_LEN);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  ledBlink(1000);
+	while (1)
+	{
+		ledBlink(1000);
+
+
+		play_note = get_last_note(note_list);
+
+		if (play_note == NULL)
+		{
+			trig = 0;
+		}
+		else
+		{
+			params.pitch = pitch_table[(play_note->midi_note)-24];
+			trig = 1;
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

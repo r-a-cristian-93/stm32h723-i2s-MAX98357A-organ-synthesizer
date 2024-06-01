@@ -1,4 +1,1 @@
-../Core/Src/Synth.cpp:12:1:Synth::Synth()	16	static
-../Core/Src/Synth.cpp:17:1:Synth::~Synth()	16	static
-../Core/Src/Synth.cpp:17:1:virtual Synth::~Synth()	16	static
-../Core/Src/Synth.cpp:24:7:float Synth::calculate_oscilator()	40	static
+../Core/Src/synth.cpp:32:6:void Make_Sound(uint16_t)	64	static

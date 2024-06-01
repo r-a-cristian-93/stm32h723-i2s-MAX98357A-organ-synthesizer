@@ -1,4 +1,4 @@
-Core/Src/Synth.o: ../Core/Src/Synth.cpp \
+Core/Src/synth.o: ../Core/Src/synth.cpp ../Core/Inc/main.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -28,7 +28,8 @@ Core/Src/Synth.o: ../Core/Src/Synth.cpp \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2s.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
- ../Core/Src/Synth.h ../Core/Inc/wavetable.h
+ ../Core/Src/synth.h ../Core/Src/wavetable_24.h
+../Core/Inc/main.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 ../Core/Inc/stm32h7xx_hal_conf.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h:
@@ -58,5 +59,5 @@ Core/Src/Synth.o: ../Core/Src/Synth.cpp \
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2s.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
-../Core/Src/Synth.h:
-../Core/Inc/wavetable.h:
+../Core/Src/synth.h:
+../Core/Src/wavetable_24.h:
