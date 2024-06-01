@@ -1,0 +1,10 @@
+../Core/Src/main.cpp:71:6:void make_sound(uint16_t)	2
+../Core/Src/main.cpp:81:6:void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef*)	1
+../Core/Src/main.cpp:86:6:void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef*)	1
+../Core/Src/main.cpp:97:5:int main()	1
+../Core/Src/main.cpp:162:6:void SystemClock_Config()	4
+../Core/Src/main.cpp:222:6:void MPU_Config()	1
+../Core/Src/main.cpp:253:6:void Error_Handler()	1
+../Core/Src/main.cpp:262:1:void __static_initialization_and_destruction_0(int, int)	5
+../Core/Src/main.cpp:262:1:cpp)	1
+../Core/Src/main.cpp:262:1:cpp)	1

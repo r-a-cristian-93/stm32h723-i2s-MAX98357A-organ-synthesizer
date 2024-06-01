@@ -1,0 +1,4 @@
+../Core/Src/Synth.cpp:12:1:Synth::Synth()	1
+../Core/Src/Synth.cpp:17:1:Synth::~Synth()	1
+../Core/Src/Synth.cpp:17:1:virtual Synth::~Synth()	1
+../Core/Src/Synth.cpp:24:7:float Synth::calculate_oscilator()	5

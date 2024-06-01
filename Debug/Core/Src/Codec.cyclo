@@ -1,0 +1,5 @@
+../Core/Src/Codec.cpp:12:1:Codec::Codec()	1
+../Core/Src/Codec.cpp:17:1:Codec::~Codec()	1
+../Core/Src/Codec.cpp:17:1:virtual Codec::~Codec()	1
+../Core/Src/Codec.cpp:21:9:uint8_t Codec::init()	1
+../Core/Src/Codec.cpp:36:9:uint8_t Codec::write(uint8_t, uint8_t)	1
