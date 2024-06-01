@@ -54,40 +54,39 @@ void generateSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex)
 
         // Update drawbar amplitude
         for (int drawbar_index = 0; drawbar_index < DRAWBARS_COUNT; drawbar_index++)
-            update_parameter(drawbar_amplitude[drawbar_index]);
-
         {
-
-            for (Note const &note : notes_list)
-            {
-                // Generate sample for current note
-                noteSample = organGenerateSample(note.value, g_time);
-                
-                // Apply envelope
-                noteSample *= note.envelope.GetAmplitude(g_time);
-                
-                // Apply global amplitude
-                noteSample *= g_amplitude;
-
-                // Make room for more notes to be played simultaneously
-                noteSample *= 0.01;
-
-                // Add to current sample
-                sample += noteSample;
-            }
+            update_parameter(drawbar_amplitude[drawbar_index]);
         }
+
+		for (Note const &note : notes_list)
+		{
+			// Generate sample for current note
+			noteSample = organGenerateSample(note.value, g_time);
+
+			// Apply envelope
+			noteSample *= note.envelope.GetAmplitude(g_time);
+
+			// Apply global amplitude
+			noteSample *= g_amplitude;
+
+			// Make room for more notes to be played simultaneously
+			noteSample *= 0.01;
+
+			// Add to current sample
+			sample += noteSample;
+		}
 
         // Limit volume so we won't blow up speakers
         if (sample > 1.0) sample = 1.0;
         if (sample < -1.0) sample = -1.0;
 
         // Add sample to left channel
-        *pOutputF32++ = (float)sample;
+        *pOutputF32++ = (uint16_t) (sample * 10000);
         // Add sample to right channel
-        *pOutputF32++ = (float)sample;
+        *pOutputF32++ = (uint16_t) (sample * 10000);
 
         // Advance time
-//        g_time += 1.0 / (double)pDevice->playback.internalSampleRate;
+        g_time += 1.0 / 48000;
     }
 }
 

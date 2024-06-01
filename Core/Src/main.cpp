@@ -161,6 +161,9 @@ int main(void)
 
   HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
 
+  uint8_t midi_message[] = {144, 60, 120};
+  executeMidiMessage(midi_message, 3);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
