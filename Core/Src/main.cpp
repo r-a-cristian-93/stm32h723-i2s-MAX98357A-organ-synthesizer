@@ -131,19 +131,19 @@ int main(void)
 	params.pitch = 220.0f;
 	params.bend = 0.0f;
 
-	params.detune = 1.0f;
+	params.detune = 0.0f;
 
-	params.osc1_waveform = 3;
-	params.osc2_waveform = 3;
+	params.osc1_waveform = 4;
+	params.osc2_waveform = 4;
 
 	params.osc1_octave = 1.0f;
 	params.osc2_octave = 1.0f;
 
-	params.osc1_mix = 0.2f;
-	params.osc2_mix = 0.2f;
+	params.osc1_mix = 0.5f;
+	params.osc2_mix = 0.5f;
 
-	params.cutoff = 24.0f;
-	params.reso = 1.0f;
+	params.cutoff = 1.0f;
+	params.reso = 0.0f;
 
 	params.adsr1_attack = 0.1f;
 	params.adsr1_decay = 0.1f;
@@ -155,11 +155,11 @@ int main(void)
 	params.adsr2_sustain = 0.5f;
 	params.adsr2_release = 0.1f;
 
-	params.lfo1_frequency = 10.0f;
-	params.lfo1_depth = 0.8f;
+	params.lfo1_frequency = 0.0f;
+	params.lfo1_depth = 1.0f;
 
 	params.lfo2_frequency = 10.0f;
-	params.lfo2_depth = 0.8f;
+	params.lfo2_depth = 1.0f;
 
   /* USER CODE END 1 */
 
@@ -213,6 +213,7 @@ int main(void)
 	{
 		ledBlink(1000);
 
+		params.pitch = params.pitch;
 
 		play_note = get_last_note(note_list);
 
