@@ -1,0 +1,7 @@
+../Core/Src/main.cpp:93:6:void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef*)	0	static
+../Core/Src/main.cpp:98:6:void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef*)	0	static
+../Core/Src/main.cpp:183:6:void SystemClock_Config()	120	static,ignoring_inline_asm
+../Core/Src/main.cpp:109:5:int main()	24	static
+../Core/Src/main.cpp:274:6:void Error_Handler()	0	static,ignoring_inline_asm
+../Core/Src/main.cpp:283:1:cpp)	0	static
+../Core/Src/main.cpp:283:1:cpp)	0	static

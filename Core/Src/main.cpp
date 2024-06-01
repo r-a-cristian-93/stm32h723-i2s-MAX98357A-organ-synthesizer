@@ -60,7 +60,7 @@ Codec codec;
 #define BUFF_LEN 512
 #define BUFF_LEN_DIV2 256
 
-uint16_t	audiobuff[BUFF_LEN];
+uint16_t	audio_buff[BUFF_LEN];
 //
 //llist 		note_list = NULL;
 //
@@ -85,19 +85,19 @@ static void MPU_Config(void);
 //	for (uint16_t i = 0; i < BUFF_LEN_DIV2; i++)
 //	{
 //		float signal = synth.calculate_oscilator();
-//		audiobuff[start_index + i] = (uint16_t)signal;
-//		audiobuff[start_index + i + 1] = (uint16_t)signal;
+//		audio_buff[start_index + i] = (uint16_t)signal;
+//		audio_buff[start_index + i + 1] = (uint16_t)signal;
 //	}
 //}
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-//	Make_Sound(0);
+	getSamples((void*)audio_buff, 0, BUFF_LEN_DIV2);
 }
 
 void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-//	Make_Sound(BUFF_LEN_DIV2);
+	getSamples((void*)audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
 }
 
 /* USER CODE END 0 */
@@ -116,8 +116,8 @@ int main(void)
 //
 //	for (i=0; i<BUFF_LEN; i=i+2)
 //	{
-//		audiobuff[i] = (uint16_t)((int16_t) 0.0f);			// Left Channel value
-//		audiobuff[i+1] = (uint16_t)((int16_t) 0.0f);		// Right Channel Value
+//		audio_buff[i] = (uint16_t)((int16_t) 0.0f);			// Left Channel value
+//		audio_buff[i+1] = (uint16_t)((int16_t) 0.0f);		// Right Channel Value
 //	}
 //
 
@@ -159,7 +159,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audiobuff, BUFF_LEN);
+  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
 
   /* USER CODE END 2 */
 

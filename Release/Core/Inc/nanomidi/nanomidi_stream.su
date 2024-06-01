@@ -1,0 +1,4 @@
+../Core/Inc/nanomidi/nanomidi_stream.c:31:15:read_buffer	8	static
+../Core/Inc/nanomidi/nanomidi_stream.c:42:15:write_buffer	8	static
+../Core/Inc/nanomidi/nanomidi_stream.c:67:6:midi_istream_from_buffer	16	static
+../Core/Inc/nanomidi/nanomidi_stream.c:94:6:midi_ostream_from_buffer	8	static

@@ -1,0 +1,5 @@
+../Core/Src/led.c:12:13:ledInit	1
+../Core/Src/led.c:22:13:ledOn	1
+../Core/Src/led.c:27:13:ledOff	1
+../Core/Src/led.c:32:13:ledToggle	1
+../Core/Src/led.c:37:13:ledBlink	2

@@ -39,11 +39,11 @@ double organGenerateSample(unsigned int note, double time)
     return sample;
 }
 
-void generateSamples(void *pOutput, uint32_t frameCount)
+void generateSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex)
 {
     float *pOutputF32 = (float *)pOutput;
 
-    for (uint32_t iFrame = 0; iFrame < frameCount; iFrame++)
+    for (uint32_t iFrame = startIndex; iFrame < endIndex; iFrame += 2)
     {
         double sample = 0;
         double noteSample = 0;
@@ -108,10 +108,11 @@ void clearSilencedNotes()
         }
     }
 }
-void dataCallback(void *pOutput, uint32_t frameCount)
+
+void getSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex)
 {
     clearSilencedNotes();
-    generateSamples(pOutput, frameCount);
+    generateSamples(pOutput, startIndex, endIndex);
 }
 
 void executeMidiMessage(uint8_t *buffer, uint8_t length)
@@ -148,6 +149,7 @@ void executeMidiMessage(uint8_t *buffer, uint8_t length)
         break;
 
         case MIDI_TYPE_CONTROL_CHANGE:
+        {
             uint8_t controller = message->data.control_change.controller;
             uint8_t value = message->data.control_change.value;
 
@@ -168,7 +170,14 @@ void executeMidiMessage(uint8_t *buffer, uint8_t length)
                     vibrato_value
                 );
             }
-            break;
+        }
+		break;
+
+        default:
+        {
+        	// DO NOTHING
+        }
+        break;
     }
 }
 

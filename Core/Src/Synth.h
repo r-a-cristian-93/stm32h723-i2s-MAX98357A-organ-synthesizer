@@ -2,7 +2,7 @@
 #define __SYNTH_H
 
 
-void dataCallback(void *pOutput, uint32_t frameCount);
+void getSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex);
 void executeMidiMessage(uint8_t *buffer, uint8_t length);
 
 #endif
