@@ -1,4 +1,0 @@
-../Core/Inc/nanomidi/msgprint.c:29:6:sprint_bytes	40	static
-../Core/Inc/nanomidi/msgprint.c:49:6:sprint_msg	24	static
-../Core/Inc/nanomidi/msgprint.c:133:6:print_bytes	264	static
-../Core/Inc/nanomidi/msgprint.c:140:6:print_msg	264	static

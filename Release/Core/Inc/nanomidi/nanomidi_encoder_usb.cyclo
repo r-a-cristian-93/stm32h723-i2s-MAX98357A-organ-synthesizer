@@ -1,2 +1,0 @@
-../Core/Inc/nanomidi/nanomidi_encoder_usb.c:31:15:write_buffer	3
-../Core/Inc/nanomidi/nanomidi_encoder_usb.c:125:8:midi_encode_usb	21
