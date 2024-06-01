@@ -1,435 +1,216 @@
-
-// PoMAD Synthol Synthetizer
-//
-// Laurent Latorre - Polytech Montpellier - 2013
-//
-// Microelectronics & Robotics Dpt. (MEA)
-// http://www.polytech.univ-montp2.fr/MEA
-//
-// Embedded Systems Dpt. (SE)
-// http://www.polytech.univ-montp2.fr/SE
-
-#include <math.h>
-#include <stdbool.h>
-
-#include "main.h"
-
-#include "synth.h"
-#include "wavetable_24.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include <iostream>
+#include <cmath>
+#include <bitset>
+#include <list>
+#include <nanomidi/decoder.h>
+#include <nanomidi/msgprint.h>
 
 
-extern uint16_t			audiobuff[BUFF_LEN];			// Circular audio buffer
-extern synth_params		params;							// Synthesizer parameters
-extern bool				trig;
-extern bool				new_note_event;
 
-extern float_t	global_fc, global_pitch;
+#include "Common.h"
+#include "Parameter.h"
+#include "EnvelopeADSR.h"
+#include "MidiManager.h"
+#include "Note.h"
 
+Parameter drawbar_amplitude[DRAWBARS_COUNT] = {Parameter()};
+Parameter vibrato_amplitude{0.002, 0.002, 0.001, 0.1};
+Parameter vibrato_frequency{0.8, 0.8, 0.01, 6.8, 0.8, 0.0001};
 
-float fastsin(uint32_t);
+double g_time = 0.0;
+double g_amplitude = 1.0;
 
+std::list<Note> notes_list;
 
-void Make_Sound(uint16_t start_index)
+double organGenerateSample(unsigned int note, double time)
 {
-	// Local variables
-
-	uint16_t 			i;															// Audio buffer index
-
-	float_t				pitch;
-
-	static float_t		osc_1_wtb_pointer = 0;										// Pointer in OSC1 wavetable
-	static float_t		osc_2_wtb_pointer = 0;										// Pointer in OSC2 wavetable
-
-	float_t				osc_1_wtb_incr;												// OSC1 sample increment
-	float_t				osc_2_wtb_incr;												// OSC2 sample increment
-
-
-	uint16_t 			a,b;														// Index of bounding samples
-	float_t				da, db;														// Distances to bounding samples
-
-	static float_t		osc_1, osc_2;												// Individual oscillator audio output
-
-	static float_t		f, fb, in1=0, in2=0, in3=0, in4=0, out1=0, out2=0, out3=0, out4=0;
-
-//	static float_t		xa=0, xa1=0, xa2=0, ya=0, ya1=0, ya2=0;
-//	static float_t		xb=0, xb1=0, xb2=0, yb=0, yb1=0, yb2=0;
-
-	static float_t		signal=0;
-	static float_t		signal_pf=0;
-
-	static float_t		adsr1_output=0;												// ADSR output
-	static uint8_t		adsr1_state=0;												// ADSR state (0=Off, 1=Attack, 2=Decay, 3=Sustain, 4=Release)
-	static float_t		attack1_incr=0;												// ADSR increment
-	static float_t		decay1_incr=0;
-	static float_t		release1_incr=0;
-
-	static float_t		adsr2_output=0;												// ADSR output
-	static uint8_t		adsr2_state=0;												// ADSR state (0=Off, 1=Attack, 2=Decay, 3=Sustain, 4=Release)
-	static float_t		attack2_incr=0;												// ADSR increment
-	static float_t		decay2_incr=0;
-	static float_t		release2_incr=0;
-
-	static float_t		lfo1_wtb_pointer=0;
-	float_t				lfo1_wtb_incr=0;
-	float_t				lfo1_output=0;
-
-	static float_t		lfo2_wtb_pointer=0;
-	float_t				lfo2_wtb_incr=0;
-	float_t				lfo2_output=0;
-
-
-	// Step 1 : Audio pre-processing (compute every half buffer)
-	// ---------------------------------------------------------
-
-//	GPIO_SetBits(GPIOD, GPIO_Pin_13);					// Set LED_13 (for debug)
-
-
-	// Compute ADSR1 & ADSR2 state & increment
-
-	if (new_note_event)																// If there is a new note to play
-	{
-		new_note_event = 0;															// Reset flag
-		adsr1_state = 1;															// Set ADSR to 'Attack' state
-		adsr2_state = 1;
-
-		attack1_incr = (1 - adsr1_output)/(params.adsr1_attack * SAMPLERATE);		// Compute increment
-		attack2_incr = (1 - adsr2_output)/(params.adsr2_attack * SAMPLERATE);
-	}
-
-	if (trig == 0)																	// If there is no note to play
-	{
-		if (adsr1_state !=4)
-		{
-			adsr1_state = 4;														// If not already done, set ADSR to 'release' state
-			release1_incr = adsr1_output /(params.adsr1_release * SAMPLERATE);		// Compute increment
-		}
-
-		if (adsr2_state !=4)
-		{
-			adsr2_state = 4;														// If not already done, set ADSR to 'release' state
-			release2_incr = adsr2_output /(params.adsr2_release * SAMPLERATE);		// Compute increment
-		}
-
-	}
-
-	decay1_incr = (1-params.adsr1_sustain) / (params.adsr1_decay * SAMPLERATE);
-	decay2_incr = (1-params.adsr2_sustain) / (params.adsr2_decay * SAMPLERATE);
-
-
-	// Step 2 : Fills the buffer with individual samples
-	// -------------------------------------------------
-
-
-	i = 0;
-
-	while(i<BUFF_LEN_DIV2)
-	{
-
-		// Compute LFO1 parameters
-
-		lfo1_wtb_incr = WTB_LEN * params.lfo1_frequency / SAMPLERATE;		// Increment value of the LFO wavetable pointer
-
-		lfo1_wtb_pointer = lfo1_wtb_pointer + lfo1_wtb_incr;
-
-		if (lfo1_wtb_pointer > WTB_LEN)
-		{
-			lfo1_wtb_pointer = lfo1_wtb_pointer - WTB_LEN;
-		}
-
-		lfo1_output = params.lfo1_depth * sinewave[(uint16_t)lfo1_wtb_pointer];
-
-		if (params.lfo1_depth==0) lfo1_output = 0;
-
-
-		// Compute LFO2 parameters
-
-		lfo2_wtb_incr = WTB_LEN * params.lfo2_frequency / SAMPLERATE;		// Increment value of the LFO wavetable pointer
-
-		lfo2_wtb_pointer = lfo2_wtb_pointer + lfo2_wtb_incr;
-
-		if (lfo2_wtb_pointer > WTB_LEN)
-		{
-			lfo2_wtb_pointer = lfo2_wtb_pointer - WTB_LEN;
-		}
-
-		lfo2_output = params.lfo2_depth * sinewave[(uint16_t)lfo2_wtb_pointer];
-
-		if (params.lfo1_depth==0) lfo1_output = 0;
-
-
-		// Compute pitch & oscillators increments
-
-		pitch = params.pitch * (1 + lfo2_output) + params.bend;
-
-		//osc_1_wtb_incr = WTB_LEN * (pitch * params.osc1_octave * (1.0f+0.5f*osc_2)) / SAMPLERATE;						// Increment value of the OSC1 wavetable pointer
-		osc_1_wtb_incr = WTB_LEN * (pitch * params.osc1_octave) / SAMPLERATE;						// Increment value of the OSC1 wavetable pointer
-		osc_2_wtb_incr = WTB_LEN * (pitch * params.osc2_octave * params.detune) / SAMPLERATE;		// Increment value of the OSC2 wavetable pointer
-
-
-		// OSC1 Perform Linear Interpolation between 'a' and 'b' points
-
-		a  = (int) osc_1_wtb_pointer;									// Compute 'a' and 'b' indexes
-		da = osc_1_wtb_pointer - a;										// and both 'da' and 'db' distances
-		b  = a + 1;
-		db = b - osc_1_wtb_pointer;
-
-		if (b==WTB_LEN) b=0;											// if 'b' passes the end of the table, use 0
-
-		switch (params.osc1_waveform)
-		{
-			case 0 :
-			{
-				osc_1 = db*square[a] + da*square[b];					// Linear interpolation (same as weighted average)
-				break;
-			}
-
-			case 1 :
-			{
-				osc_1 = db*triangle[a] + da*triangle[b];
-				break;
-			}
-
-			case 2 :
-			{
-				osc_1 = db*sawtooth[a] + da*sawtooth[b];
-				break;
-			}
-
-			case 3 :
-			{
-				osc_1 = db*distosine[a] + da*distosine[b];
-				break;
-			}
-
-			default :
-			{
-				osc_1 = db*sinewave[a] + da*sinewave[b];
-				break;
-			}
-		}
-
-
-		// OSC2 Perform Linear Interpolation between 'a' and 'b' points
-
-		a  = (int) osc_2_wtb_pointer;									// Compute 'a' and 'b' indexes
-		da = osc_2_wtb_pointer - a;										// and both 'da' and 'db' distances
-		b  = a + 1;
-		db = b - osc_2_wtb_pointer;
-
-		if (b==WTB_LEN) b=0;											// if 'b' passes the end of the table, use 0
-
-		switch (params.osc2_waveform)
-		{
-			case 0 :
-			{
-				osc_2 = db*square[a] + da*square[b];					// Linear interpolation (same as weighted average)
-				break;
-			}
-
-			case 1 :
-			{
-				osc_2 = db*triangle[a] + da*triangle[b];
-				break;
-			}
-
-			case 2 :
-			{
-				osc_2 = db*sawtooth[a] + da*sawtooth[b];
-				break;
-			}
-
-			case 3 :
-			{
-				osc_2 = db*distosine[a] + da*distosine[b];
-				break;
-			}
-
-			default :
-			{
-				osc_2 = db*sinewave[a] + da*sinewave[b];
-				break;
-			}
-		}
-
-		// Oscillator Mixer section
-
-		signal = (params.osc1_mix * osc_1) + (params.osc2_mix * osc_2);
-
-
-		// Pseudo MOOG Filter Section
-
-		f =  (float_t) params.cutoff * (1.0f+ lfo1_output) * (1.0f + adsr2_output) * pitch * 1.16f / (SAMPLERATE/2) ;
-
-		if (f>1.0f) f=1.0f;
-
-		fb = (float_t) params.reso * (1.0f - 0.15f * f*f);
-
-		signal -= out4 * fb;
-		signal *= 0.35013f * (f*f) * (f*f);
-		out1 = signal + 0.3f * in1 + (1-f) * out1; 				// Pole 1
-		in1 = signal;
-		out2 = out1 + 0.3f * in2 + (1-f) * out2; 				// Pole 2
-		in2 = out1;
-		out3 = out2 + 0.3f * in3 + (1-f) * out3; 				// Pole 3
-		in3 = out2;
-		out4 = out3 + 0.3f * in4 + (1-f) * out4; 				// Pole 4
-		in4 = out3;
-
-		signal_pf = out4;
-
-
-		// ADSR1 section
-
-		switch (adsr1_state)
-		{
-			case 0 :											// Off
-			{
-				adsr1_output = 0;
-				break;
-			}
-
-			case 1 :											// Attack
-			{
-				adsr1_output = adsr1_output + attack1_incr;
-
-				if (adsr1_output > 1)
-				{
-					adsr1_output = 1;
-					adsr1_state = 2;
-//					GPIO_SetBits(GPIOD, GPIO_Pin_15);
-				}
-
-				break;
-			}
-
-			case 2 :											// Decay
-			{
-				adsr1_output = adsr1_output - decay1_incr;
-
-				if (adsr1_output < params.adsr1_sustain)
-				{
-					adsr1_output = params.adsr1_sustain;
-					adsr1_state = 3;
-				}
-				break;
-			}
-
-			case 3 :											// Sustain
-			{
-				adsr1_output = params.adsr1_sustain;
-				break;
-			}
-
-			case 4 :											// Release
-			{
-				adsr1_output = adsr1_output - release1_incr;
-
-				if (adsr1_output < 0)
-				{
-					adsr1_output = 0;
-					adsr1_state = 0;
-//					GPIO_ResetBits(GPIOD, GPIO_Pin_15);
-				}
-				break;
-			}
-		}
-
-
-		// ADSR2 section
-
-		switch (adsr2_state)
-		{
-			case 0 :											// Off
-			{
-				adsr2_output = 0;
-				break;
-			}
-
-			case 1 :											// Attack
-			{
-				adsr2_output = adsr2_output + attack2_incr;
-
-				if (adsr2_output > 1)
-				{
-					adsr2_output = 1;
-					adsr2_state = 2;
-//					GPIO_SetBits(GPIOD, GPIO_Pin_15);
-				}
-
-				break;
-			}
-
-			case 2 :											// Decay
-			{
-				adsr2_output = adsr2_output - decay2_incr;
-
-				if (adsr2_output < params.adsr2_sustain)
-				{
-					adsr2_output = params.adsr2_sustain;
-					adsr2_state = 3;
-				}
-				break;
-			}
-
-			case 3 :											// Sustain
-			{
-				adsr2_output = params.adsr2_sustain;
-				break;
-			}
-
-			case 4 :											// Release
-			{
-				adsr2_output = adsr2_output - release2_incr;
-
-				if (adsr2_output < 0)
-				{
-					adsr2_output = 0;
-					adsr2_state = 0;
-//					GPIO_ResetBits(GPIOD, GPIO_Pin_15);
-				}
-				break;
-			}
-		}
-
-
-		// VCA section
-
-		signal = adsr1_output * 32767.0f * signal_pf;
-
-		if (signal >  32767.0f) signal =  32767.0f;
-		if (signal < -32767.0f) signal = -32767.0f;
-
-
-		// Fill the buffer
-
-		audiobuff[start_index+i] =   (uint16_t)((int16_t) signal);		// Left Channel value
-		audiobuff[start_index+i+1] = (uint16_t)((int16_t) signal);		// Right Channel Value
-
-
-		// Update pointers for next loop
-
-		i = i+2;															// Audio buffer (L+R)
-
-		osc_1_wtb_pointer = osc_1_wtb_pointer + osc_1_wtb_incr;				// WTB buffer
-		if (osc_1_wtb_pointer>WTB_LEN)										// return to zero if end is reached
-		{
-			osc_1_wtb_pointer = osc_1_wtb_pointer - WTB_LEN;
-		}
-
-		osc_2_wtb_pointer = osc_2_wtb_pointer + osc_2_wtb_incr;				// WTB buffer
-		if (osc_2_wtb_pointer>WTB_LEN)										// return to zero if end is reached
-		{
-			osc_2_wtb_pointer = osc_2_wtb_pointer - WTB_LEN;
-		}
-	}
-
-//	GPIO_ResetBits(GPIOD, GPIO_Pin_13);
-
+    double sample = 0;
+
+    for (int drawbar_index = 0; drawbar_index < DRAWBARS_COUNT; drawbar_index++)
+    {
+        sample +=
+            sin(
+                M_2PI * (note_frequency[note][drawbar_index]) * time
+                + (vibrato_amplitude.current_value * note_frequency[note][drawbar_index] * sin(M_2PI * vibrato_frequency.current_value * time)) // vibrato
+            )
+                * drawbar_amplitude[drawbar_index].current_value;
+    }
+    return sample;
 }
 
+void generateSamples(void *pOutput, uint32_t frameCount)
+{
+    float *pOutputF32 = (float *)pOutput;
 
+    for (uint32_t iFrame = 0; iFrame < frameCount; iFrame++)
+    {
+        double sample = 0;
+        double noteSample = 0;
 
+        // Update LFO
+        update_parameter(vibrato_amplitude);
+        update_parameter(vibrato_frequency);
 
+        // Update drawbar amplitude
+        for (int drawbar_index = 0; drawbar_index < DRAWBARS_COUNT; drawbar_index++)
+            update_parameter(drawbar_amplitude[drawbar_index]);
 
+        {
 
+            for (Note const &note : notes_list)
+            {
+                // Generate sample for current note
+                noteSample = organGenerateSample(note.value, g_time);
+                
+                // Apply envelope
+                noteSample *= note.envelope.GetAmplitude(g_time);
+                
+                // Apply global amplitude
+                noteSample *= g_amplitude;
 
+                // Make room for more notes to be played simultaneously
+                noteSample *= 0.01;
+
+                // Add to current sample
+                sample += noteSample;
+            }
+        }
+
+        // Limit volume so we won't blow up speakers
+        if (sample > 1.0) sample = 1.0;
+        if (sample < -1.0) sample = -1.0;
+
+        // Add sample to left channel
+        *pOutputF32++ = (float)sample;
+        // Add sample to right channel
+        *pOutputF32++ = (float)sample;
+
+        // Advance time
+//        g_time += 1.0 / (double)pDevice->playback.internalSampleRate;
+    }
+}
+
+void clearSilencedNotes()
+{
+    for (auto it = notes_list.begin(); it != notes_list.end(); it++)
+    {
+        // Remove one by one in the order they were added
+        if (it->envelope.GetAmplitude(g_time) <= 0 && !it->envelope.bNoteOn)
+        {
+            notes_list.erase(it++);
+            break;
+        }
+    }
+}
+
+void dataCallback(void *pOutput, uint32_t frameCount)
+{
+    clearSilencedNotes();
+    generateSamples(pOutput, frameCount);
+}
+
+void executeMidiMessage(uint8_t *buffer, uint8_t length)
+{
+    unsigned int nBytes = length;
+    struct midi_istream istream;
+
+    // Nanomidi does not read from std::vector so send the address of the first element
+    midi_istream_from_buffer(&istream, &buffer[0], nBytes);
+    struct midi_message *message = midi_decode(&istream);
+    // print_msg(message);
+
+    switch (message->type)
+    {
+        case MIDI_TYPE_NOTE_ON:
+        {
+            notes_list.push_back(
+                Note{message->data.note_on.note, EnvelopeADSR(g_time)}
+            );
+        }
+        break;
+
+        case MIDI_TYPE_NOTE_OFF:
+        {
+            for (Note &note : notes_list)
+            {
+                if (note.value == message->data.note_off.note && note.envelope.bNoteOn)
+                {
+                    note.envelope.NoteOff(g_time);
+                    break;
+                }
+            }
+        }
+        break;
+
+        case MIDI_TYPE_CONTROL_CHANGE:
+            uint8_t controller = message->data.control_change.controller;
+            uint8_t value = message->data.control_change.value;
+
+            if (is_drawbar_controller(controller))
+                set_parameter_value(
+                    drawbar_amplitude[get_drawbar_id(controller)],
+                    value / 127.0f
+                );
+            if (is_vibrato_controller(controller))
+            {
+                double vibrato_value;
+
+                if (value == 0) vibrato_value = vibrato_frequency.min_value;
+                else vibrato_value = vibrato_frequency.max_value;
+
+                set_parameter_value(
+                    vibrato_frequency,
+                    vibrato_value
+                );
+            }
+            break;
+    }
+}
+
+//
+//void loop()
+//{
+//    ma_device_config config = ma_device_config_init(ma_device_type_playback);
+//    config.playback.format = ma_format_f32; // Set to ma_format_unknown to use the device's native format.
+//    config.playback.channels = 2;           // Set to 0 to use the device's native channel count.
+//    config.sampleRate = 44100;              // Set to 0 to use the device's native sample rate.
+//    config.dataCallback = dataCallback;     // This function will be called when miniaudio needs more data.
+//    config.pUserData = NULL;                // Can be accessed from the device object (device.pUserData).
+//
+//     Wait for user input (you can adjust this as needed)
+//    std::cout << "Press ESC to exit..." << std::endl;
+//    while (true)
+//    {
+//        int input = getchar();
+//
+//        if (input == 27)
+//            break;
+//
+//        switch (input)
+//        {
+//        case 'd':
+//            increase_value(vibrato_amplitude);
+//            break;
+//        case 'c':
+//            decrease_value(vibrato_amplitude);
+//            break;
+//        case 'f':
+//            increase_value(vibrato_frequency);
+//            break;
+//        case 'v':
+//            decrease_value(vibrato_frequency);
+//            break;
+//        }
+//
+//        for (int i = 0; i < DRAWBARS_COUNT; i++)
+//            std::cout << (i + 1) << " " << drawbar_amplitude[i].current_value << " " << drawbar_amplitude[i].target_value << std::endl;
+//
+//        std::cout << std::endl;
+//        std::cout << "VIBRATO_AMPLITUDE:  " << vibrato_amplitude.current_value << std::endl;
+//        std::cout << "VIBRATO_FREQUENCY:  " << vibrato_frequency.current_value << std::endl;
+//        std::cout << "NOTES_LIST:  " << notes_list.size() << std::endl;
+//        std::cout << std::endl;
+//    }
+//
+//}
