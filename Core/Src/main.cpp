@@ -200,7 +200,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 //  synth.pitch = 250.0f;
-	note_list = add_note_last(note_list, 64, 124);
+	note_list = add_note_last(note_list, 32, 124);
 	new_note_event = 1;
 
   HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audiobuff, BUFF_LEN);

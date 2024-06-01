@@ -1,5 +1,0 @@
-../Core/Src/llist.cpp:21:7:note* add_note_first(llist, uint8_t, uint8_t)	24	static
-../Core/Src/llist.cpp:45:7:note* add_note_last(llist, uint8_t, uint8_t)	24	static
-../Core/Src/llist.cpp:84:7:note* delete_note(llist, uint8_t)	24	static
-../Core/Src/llist.cpp:114:7:note* get_last_note(llist)	24	static
-../Core/Src/llist.cpp:137:6:void print_all_note(llist)	24	static

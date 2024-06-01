@@ -1,9 +1,0 @@
-../Core/Src/main.cpp:99:6:void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef*)	1
-../Core/Src/main.cpp:104:6:void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef*)	1
-../Core/Src/main.cpp:115:5:int main()	3
-../Core/Src/main.cpp:239:6:void SystemClock_Config()	4
-../Core/Src/main.cpp:299:6:void MPU_Config()	1
-../Core/Src/main.cpp:330:6:void Error_Handler()	1
-../Core/Src/main.cpp:339:1:void __static_initialization_and_destruction_0(int, int)	5
-../Core/Src/main.cpp:339:1:cpp)	1
-../Core/Src/main.cpp:339:1:cpp)	1
