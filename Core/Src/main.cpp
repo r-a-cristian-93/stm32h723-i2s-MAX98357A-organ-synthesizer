@@ -162,11 +162,11 @@ int main(void)
   HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
 
   // Note On
-  uint8_t midi_message[] = {144, 72, 120};
+  uint8_t midi_message[] = {144, 81, 120};
   executeMidiMessage(midi_message, 3);
 
   // Drawbar settings
-  for (uint8_t drawbar_index = 73; drawbar_index <= 78; drawbar_index++)
+  for (uint8_t drawbar_index = 71; drawbar_index <= 78; drawbar_index++)
   {
 	  midi_message[0] = 176;
 	  midi_message[1] = drawbar_index;

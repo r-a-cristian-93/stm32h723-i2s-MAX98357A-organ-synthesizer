@@ -15,7 +15,7 @@
 #include "Note.h"
 
 Parameter drawbar_amplitude[DRAWBARS_COUNT] = {Parameter()};
-Parameter vibrato_amplitude{0.002, 0.002, 0.001, 0.1};
+Parameter vibrato_amplitude{0.02, 0.002, 0.001, 0.1};
 Parameter vibrato_frequency{0.8, 0.8, 0.01, 6.8, 0.8, 0.0001};
 
 double g_time = 0.0;
