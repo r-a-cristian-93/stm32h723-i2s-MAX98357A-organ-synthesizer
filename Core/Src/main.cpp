@@ -134,6 +134,7 @@ int main(void)
   /* USER CODE BEGIN Init */
 
   ledInit();
+  initSynth();
 
 //  uint8_t codec_status = codec.init();
 
@@ -162,7 +163,7 @@ int main(void)
   HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
 
   // Note On
-  uint8_t midi_message[] = {144, 81, 120};
+  uint8_t midi_message[] = {144, 33, 120};
   executeMidiMessage(midi_message, 3);
 
   // Drawbar settings

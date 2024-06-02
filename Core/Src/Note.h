@@ -7,7 +7,10 @@
 struct Note
 {
     uint8_t value = 0;
+
     EnvelopeADSR envelope;
+
+    uint16_t phase = 0;
 
     bool operator==(const Note &other) const
     {

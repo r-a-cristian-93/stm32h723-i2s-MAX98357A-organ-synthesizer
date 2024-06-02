@@ -6,13 +6,39 @@
 #include <nanomidi/decoder.h>
 #include <nanomidi/msgprint.h>
 
-
-
 #include "Common.h"
 #include "Parameter.h"
 #include "EnvelopeADSR.h"
 #include "MidiManager.h"
 #include "Note.h"
+
+//set up array with sine values in signed 8-bit numbers
+#define LUT_SIZE 1024
+#define SAMPLE_RATE 65536
+#define MIDI_NOTES 128
+
+float sinTable[LUT_SIZE];
+void initSineTable() {
+  for (uint32_t i = 0; i < LUT_SIZE; ++i) {
+    sinTable[i] = sin(M_2PI * i / LUT_SIZE);
+  }
+}
+
+//setup frequencies/phase increments, (A4 is defined as 440Hz)
+uint16_t phaseIncrement[MIDI_NOTES];
+void initPhaseIncrement() {
+  for (uint32_t i=0; i < MIDI_NOTES; i++){
+	  uint8_t mul = (LUT_SIZE * LUT_SIZE) / SAMPLE_RATE;
+	  phaseIncrement[i] = note_frequency[i][0] * mul;
+//    phaseIncrement[i]= 110.0 * pow(2.0, ( (i-21) / 12.0)) * 65536.0 / (48000.0/512) + 0.5;
+  }
+}
+
+void initSynth()
+{
+	initSineTable();
+	initPhaseIncrement();
+}
 
 Parameter drawbar_amplitude[DRAWBARS_COUNT] = {Parameter()};
 Parameter vibrato_amplitude{0.02, 0.002, 0.001, 0.1};
@@ -23,19 +49,21 @@ double g_amplitude = 1.0;
 
 std::list<Note> notes_list;
 
-double organGenerateSample(unsigned int note, double time)
+double organGenerateSample(Note& note, double time)
 {
     double sample = 0;
 
-    for (int drawbar_index = 0; drawbar_index < DRAWBARS_COUNT; drawbar_index++)
+    for (int drawbar_index = 0; drawbar_index < 1; drawbar_index++)
     {
-        sample +=
-            sin(
-                M_2PI * (note_frequency[note][drawbar_index]) * time
-                + (vibrato_amplitude.current_value * note_frequency[note][drawbar_index] * sin(M_2PI * vibrato_frequency.current_value * time)) // vibrato
-            )
-                * drawbar_amplitude[drawbar_index].current_value;
+    	uint16_t lutIndex = note.phase >> 6;
+
+    	const float sinValue = sinTable[lutIndex];
+
+        sample += sinValue * drawbar_amplitude[drawbar_index].current_value;
     }
+
+    note.phase += phaseIncrement[note.value];
+
     return sample;
 }
 
@@ -58,10 +86,10 @@ void generateSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex)
             update_parameter(drawbar_amplitude[drawbar_index]);
         }
 
-		for (Note const &note : notes_list)
+		for (Note &note : notes_list)
 		{
 			// Generate sample for current note
-			noteSample = organGenerateSample(note.value, g_time);
+			noteSample = organGenerateSample(note, g_time);
 
 			// Apply envelope
 			noteSample *= note.envelope.GetAmplitude(g_time);
@@ -180,49 +208,3 @@ void executeMidiMessage(uint8_t *buffer, uint8_t length)
     }
 }
 
-//
-//void loop()
-//{
-//    ma_device_config config = ma_device_config_init(ma_device_type_playback);
-//    config.playback.format = ma_format_f32; // Set to ma_format_unknown to use the device's native format.
-//    config.playback.channels = 2;           // Set to 0 to use the device's native channel count.
-//    config.sampleRate = 44100;              // Set to 0 to use the device's native sample rate.
-//    config.dataCallback = dataCallback;     // This function will be called when miniaudio needs more data.
-//    config.pUserData = NULL;                // Can be accessed from the device object (device.pUserData).
-//
-//     Wait for user input (you can adjust this as needed)
-//    std::cout << "Press ESC to exit..." << std::endl;
-//    while (true)
-//    {
-//        int input = getchar();
-//
-//        if (input == 27)
-//            break;
-//
-//        switch (input)
-//        {
-//        case 'd':
-//            increase_value(vibrato_amplitude);
-//            break;
-//        case 'c':
-//            decrease_value(vibrato_amplitude);
-//            break;
-//        case 'f':
-//            increase_value(vibrato_frequency);
-//            break;
-//        case 'v':
-//            decrease_value(vibrato_frequency);
-//            break;
-//        }
-//
-//        for (int i = 0; i < DRAWBARS_COUNT; i++)
-//            std::cout << (i + 1) << " " << drawbar_amplitude[i].current_value << " " << drawbar_amplitude[i].target_value << std::endl;
-//
-//        std::cout << std::endl;
-//        std::cout << "VIBRATO_AMPLITUDE:  " << vibrato_amplitude.current_value << std::endl;
-//        std::cout << "VIBRATO_FREQUENCY:  " << vibrato_frequency.current_value << std::endl;
-//        std::cout << "NOTES_LIST:  " << notes_list.size() << std::endl;
-//        std::cout << std::endl;
-//    }
-//
-//}
