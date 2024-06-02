@@ -4,6 +4,7 @@
 void initSynth();
 void getSamples(void *pOutput, uint32_t startIndex, uint32_t endIndex);
 void executeMidiMessage(uint8_t *buffer, uint8_t length);
+void nextNote(uint32_t millis);
 
 
 #endif

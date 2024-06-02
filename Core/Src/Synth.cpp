@@ -11,6 +11,7 @@
 #include "EnvelopeADSR.h"
 #include "MidiManager.h"
 #include "Note.h"
+#include "stm32h7xx_hal.h"
 
 //set up array with sine values in signed 8-bit numbers
 #define LUT_SIZE 1024
@@ -40,6 +41,7 @@ void initSynth()
 	initPhaseIncrement();
 }
 
+
 Parameter drawbar_amplitude[DRAWBARS_COUNT] = {Parameter()};
 Parameter vibrato_amplitude{0.02, 0.002, 0.001, 0.1};
 Parameter vibrato_frequency{0.8, 0.8, 0.01, 6.8, 0.8, 0.0001};
@@ -48,6 +50,25 @@ double g_time = 0.0;
 double g_amplitude = 1.0;
 
 std::list<Note> notes_list;
+
+
+void nextNote(uint32_t millis)
+{
+	static uint32_t tickStart = 0;
+	uint32_t nowTicks = HAL_GetTick();
+
+	if (nowTicks - tickStart > millis)
+	{
+		if (notes_list.size() > 0)
+		{
+			if (notes_list.begin()->value++ >= 128)
+			{
+				notes_list.begin()->value = 0;
+			}
+		}
+		tickStart = nowTicks;
+	}
+}
 
 double organGenerateSample(Note& note, double time)
 {
