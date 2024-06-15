@@ -1,12 +1,6 @@
-/*
- * MidiManager.h
- *
- *  Created on: Jun 15, 2024
- *      Author: Bianca
- */
 
-#ifndef SRC_MIDIMANAGER_H_
-#define SRC_MIDIMANAGER_H_
+#ifndef MIDI_H
+#define MIDI_H
 
 #include "stm32h7xx_hal.h"
 #include "stdbool.h"
@@ -59,7 +53,6 @@
 #define MIDI_MESSAGE_DEFAULT_VOLUME       100
 
 void MIDI_ProcessUSBData(void);
-void MIDI_ProcessUARTData(void);
 void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2);
 
-#endif /* SRC_MIDIMANAGER_H_ */
+#endif

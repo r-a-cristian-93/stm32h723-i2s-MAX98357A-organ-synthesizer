@@ -34,7 +34,7 @@
 #include <OrganEngine/WaveTables.h>
 #include <OrganEngine/NoteManager.h>
 
-#include "MidiManager.h"
+#include "midi_router.h"
 
 /* USER CODE END Includes */
 
@@ -202,6 +202,7 @@ int main(void)
 	while (1)
 	{
 	    MIDI_ProcessUSBData();
+
 
 		if (timeOut(1000)) {
 			ledToggle();
