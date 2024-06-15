@@ -19,17 +19,19 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
-#include "i2c.h"
 #include "i2s.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "Codec.h"
 #include "led.h"
-#include "Synth.h"
 
+#include <OrganEngine/Config.h>
+#include <OrganEngine/OrganOscillator.h>
+#include <OrganEngine/RotarySpeaker.h>
+#include <OrganEngine/WaveTables.h>
+#include <OrganEngine/NoteManager.h>
 
 /* USER CODE END Includes */
 
@@ -52,21 +54,10 @@
 
 /* USER CODE BEGIN PV */
 
-Codec codec;
-
-//float_t		global_pitch;
-//float_t		global_fc;
-//
 #define BUFF_LEN 512
 #define BUFF_LEN_DIV2 256
 
 uint16_t	audio_buff[BUFF_LEN];
-//
-//llist 		note_list = NULL;
-//
-//synth_params	params;
-//bool			trig;
-//bool			new_note_event;
 
 /* USER CODE END PV */
 
@@ -80,24 +71,59 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//void make_sound(uint16_t start_index)
-//{
-//	for (uint16_t i = 0; i < BUFF_LEN_DIV2; i++)
-//	{
-//		float signal = synth.calculate_oscilator();
-//		audio_buff[start_index + i] = (uint16_t)signal;
-//		audio_buff[start_index + i + 1] = (uint16_t)signal;
-//	}
-//}
+void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
+{
+	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
+	{
+        double sample = 0;
+
+        organ_oscillator_update();
+        rotary_speaker_parameters_update();
+
+        {
+//            const std::lock_guard<std::mutex> lock(notesMutex);
+
+            for (Note &note : notesList)
+            {
+                sample += organ_oscillator_generate_sample(note);
+            }
+        }
+
+        sample = rotary_speaker_process_sample(sample);
+
+        uint16_t u_sample = (uint16_t) ((sample + 1.0) * ((0xFFF + 1) * 3));
+
+        output[iFrame] = u_sample;
+        output[iFrame +1 ] = u_sample;
+	}
+
+
+}
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-	getSamples((void*)audio_buff, 0, BUFF_LEN_DIV2);
+	getSamples(audio_buff, 0, BUFF_LEN_DIV2);
 }
 
-void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef *hi2s)
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-	getSamples((void*)audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
+	getSamples(audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
+}
+
+
+uint8_t inline timeOut(uint32_t millis)
+{
+	static uint32_t tickStart = 0;
+	uint32_t nowTicks = HAL_GetTick();
+
+	if (nowTicks - tickStart > millis)
+	{
+		tickStart = nowTicks;
+
+		return 1;
+	}
+
+	return 0;
 }
 
 /* USER CODE END 0 */
@@ -109,87 +135,77 @@ void HAL_I2S_TxfCpltCallback(I2S_HandleTypeDef *hi2s)
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
-//	int 	i;					// General purpose variable
-//
-//	note* 		play_note;
-//
-//	for (i=0; i<BUFF_LEN; i=i+2)
-//	{
-//		audio_buff[i] = (uint16_t)((int16_t) 0.0f);			// Left Channel value
-//		audio_buff[i+1] = (uint16_t)((int16_t) 0.0f);		// Right Channel Value
-//	}
-//
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	for (uint16_t i = 0; i < BUFF_LEN; i++) {
+		audio_buff[i] = 0;
+	}
 
-  /* MPU Configuration--------------------------------------------------------*/
-  MPU_Config();
+	waveforms_initialize();
+	organ_oscillator_initialize();
+	rotary_speaker_initialize();
 
-  /* MCU Configuration--------------------------------------------------------*/
+	uint16_t currentNote = 64;
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  ledInit();
-  initSynth();
-
-//  uint8_t codec_status = codec.init();
-
-//  if (codec_status != HAL_OK)
-//  {
-//	  return HAL_ERROR;
-//  }
+	note_on(currentNote);
 
 
-  /* USER CODE END Init */
+	/* USER CODE END 1 */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* MPU Configuration--------------------------------------------------------*/
+	MPU_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* USER CODE END SysInit */
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_I2S3_Init();
-  MX_I2C1_Init();
-  /* USER CODE BEGIN 2 */
+	/* USER CODE BEGIN Init */
 
-  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
+	ledInit();
 
-  // Note On
-  uint8_t midi_message[] = {144, 0, 120};
-  executeMidiMessage(midi_message, 3);
+	/* USER CODE END Init */
 
-  // Drawbar settings
-  for (uint8_t drawbar_index = 71; drawbar_index <= 78; drawbar_index++)
-  {
-	  midi_message[0] = 176;
-	  midi_message[1] = drawbar_index;
-	  midi_message[2] = 0;
+	/* Configure the system clock */
+	SystemClock_Config();
 
-	  executeMidiMessage(midi_message, 3);
-  }
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END 2 */
+	/* USER CODE END SysInit */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_I2S3_Init();
+	/* USER CODE BEGIN 2 */
+
+	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
+
+	/* USER CODE END 2 */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		ledBlink(500);
-		nextNote(1000);
+		if (timeOut(1000)) {
 
-    /* USER CODE END WHILE */
+			ledToggle();
 
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+			note_off (currentNote);
+
+			currentNote++;
+
+			if (currentNote > 85)
+				currentNote = 64;
+
+			note_on (currentNote);
+		}
+
+	/* USER CODE END WHILE */
+
+	/* USER CODE BEGIN 3 */
+	}
+	/* USER CODE END 3 */
 }
 
 /**

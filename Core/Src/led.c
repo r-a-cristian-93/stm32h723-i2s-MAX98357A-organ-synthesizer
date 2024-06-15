@@ -34,14 +34,3 @@ void inline ledToggle()
 	GPIOE_ODR ^= 1 << 3;
 }
 
-void inline ledBlink(uint32_t millis)
-{
-	static uint32_t tickStart = 0;
-	uint32_t nowTicks = HAL_GetTick();
-
-	if (nowTicks - tickStart > millis)
-	{
-		ledToggle();
-		tickStart = nowTicks;
-	}
-}

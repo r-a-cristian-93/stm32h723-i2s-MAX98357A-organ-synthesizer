@@ -9,8 +9,6 @@ void ledInit();
 void ledOn();
 void ledOff();
 void ledToggle();
-void ledBlinkInit();
-void ledBlink(uint32_t millis);
 
 #ifdef __cplusplus
 }
