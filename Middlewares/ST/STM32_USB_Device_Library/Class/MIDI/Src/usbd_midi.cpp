@@ -674,7 +674,7 @@ static uint8_t  USBD_MIDI_Setup (USBD_HandleTypeDef *pdev,
 {
   uint16_t len = 0;
   uint8_t  *pbuf = NULL;
-  USBD_MIDI_HandleTypeDef     *hmidi = pdev->pClassData;
+  USBD_MIDI_HandleTypeDef     *hmidi = (USBD_MIDI_HandleTypeDef*) pdev->pClassData;
   
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
@@ -764,12 +764,10 @@ uint8_t USBD_MIDI_GetState(USBD_HandleTypeDef  *pdev)
   * @param  len: size of report
   * @retval status
   */
-uint8_t USBD_MIDI_SendReport     (USBD_HandleTypeDef  *pdev, 
-                                 uint8_t *report,
-                                 uint16_t len)
+uint8_t USBD_MIDI_SendReport (USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len)
 {
-  USBD_MIDI_HandleTypeDef *hmidi = pdev->pClassData;
-  
+  USBD_MIDI_HandleTypeDef *hmidi = (USBD_MIDI_HandleTypeDef *)pdev->pClassData;
+
   if (pdev->dev_state == USBD_STATE_CONFIGURED)
   {
     if(hmidi->state == MIDI_IDLE)

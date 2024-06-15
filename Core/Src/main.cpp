@@ -132,6 +132,8 @@ uint8_t inline timeOut(uint32_t millis)
 
 uint8_t prevNote = 64;
 
+
+
 //void CDC_Handle_Receive(uint8_t* Buf, uint32_t* Len) {
 //	uint8_t newNote = std::atoi((const char*)Buf);
 //
@@ -206,6 +208,9 @@ int main(void)
 
 		if (timeOut(1000)) {
 			ledToggle();
+
+			uint8_t report[] = {0, 91, 64, 127};
+			MIDI_addToUSBReport(report[0], report[1], report[2], report[3]);
 		}
 
     /* USER CODE END WHILE */

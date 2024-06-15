@@ -3,11 +3,12 @@
 //#include "usart.h"
 #include "usb_device.h"
 #include "usbd_midi.h"
+#include "led.h"
 
-//#include <OrganEngine/NoteManager.h>
+#include <OrganEngine/NoteManager.h>
 
 
-extern USBD_HandleTypeDef hUsbDeviceFS;
+extern USBD_HandleTypeDef hUsbDeviceHS;
 
 static uint8_t buffUsbReport[MIDI_EPIN_SIZE] = {0};
 static uint8_t buffUsbReportNextIndex = 0;
@@ -19,6 +20,7 @@ static uint8_t buffUsbCurrIndex = 0;
 //static uint8_t buffUart1[3] = {0};
 //static uint8_t buffUartIndex1 = 0;
 //static uint8_t msgUart1 = 0;
+
 
 void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_length)
 {
@@ -40,8 +42,9 @@ bool MIDI_HasUSBData(void)
 
 void processMessage(uint8_t data)
 {
-
+	ledToggle();
 }
+
 
 void MIDI_ProcessUSBData(void)
 {
@@ -86,6 +89,17 @@ void MIDI_ProcessUSBData(void)
   message = (messageByte >> 4);
   param1 = buffUsb[buffUsbCurrIndex + 2];
   param2 = buffUsb[buffUsbCurrIndex + 3];
+
+  switch (message) {
+	  case MIDI_MESSAGE_NOTE_ON:
+		  note_on(param1);
+		  break;
+	  case MIDI_MESSAGE_NOTE_OFF:
+		  note_off(param1);
+		  break;
+	  default:
+		  break;
+  }
 
   if ((messageByte & MIDI_MASK_REAL_TIME_MESSAGE) == MIDI_MASK_REAL_TIME_MESSAGE)
   {
@@ -132,8 +146,8 @@ void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t
 
   if (buffUsbReportNextIndex == MIDI_EPIN_SIZE)
   {
-    while (USBD_MIDI_GetState(&hUsbDeviceFS) != MIDI_IDLE) {};
-    USBD_MIDI_SendReport(&hUsbDeviceFS, buffUsbReport, MIDI_EPIN_SIZE);
+    while (USBD_MIDI_GetState(&hUsbDeviceHS) != MIDI_IDLE) {};
+    USBD_MIDI_SendReport(&hUsbDeviceHS, buffUsbReport, MIDI_EPIN_SIZE);
     buffUsbReportNextIndex = 0;
   }
 }
