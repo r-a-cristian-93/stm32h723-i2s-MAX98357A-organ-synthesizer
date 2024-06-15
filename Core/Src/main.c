@@ -26,16 +26,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "led.h"
-
-#include <OrganEngine/Config.h>
-#include <OrganEngine/OrganOscillator.h>
-#include <OrganEngine/RotarySpeaker.h>
-#include <OrganEngine/WaveTables.h>
-#include <OrganEngine/NoteManager.h>
-
-#include "MidiManager.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,11 +47,6 @@
 
 /* USER CODE BEGIN PV */
 
-#define BUFF_LEN 512
-#define BUFF_LEN_DIV2 256
-
-uint16_t	audio_buff[BUFF_LEN];
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,75 +59,6 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
-{
-	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
-	{
-        double sample = 0;
-
-        organ_oscillator_update();
-        rotary_speaker_parameters_update();
-
-        {
-//            const std::lock_guard<std::mutex> lock(notesMutex);
-
-            for (Note &note : notesList)
-            {
-                sample += organ_oscillator_generate_sample(note);
-            }
-        }
-
-        sample = rotary_speaker_process_sample(sample);
-
-        uint16_t u_sample = (uint16_t) ((sample + 1.0) * ((0xFFF + 1) * 3));
-
-        output[iFrame] = u_sample;
-        output[iFrame +1 ] = u_sample;
-	}
-
-
-}
-
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
-{
-	getSamples(audio_buff, 0, BUFF_LEN_DIV2);
-}
-
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
-{
-	getSamples(audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
-}
-
-
-uint8_t inline timeOut(uint32_t millis)
-{
-	static uint32_t tickStart = 0;
-	uint32_t nowTicks = HAL_GetTick();
-
-	if (nowTicks - tickStart > millis)
-	{
-		tickStart = nowTicks;
-
-		return 1;
-	}
-
-	return 0;
-}
-
-
-uint8_t prevNote = 64;
-
-//void CDC_Handle_Receive(uint8_t* Buf, uint32_t* Len) {
-//	uint8_t newNote = std::atoi((const char*)Buf);
-//
-//	note_off (prevNote);
-//	note_on (newNote);
-//
-//	prevNote = newNote;
-//
-//	CDC_Transmit_HS(Buf, (uint16_t)*Len);
-//}
-
 /* USER CODE END 0 */
 
 /**
@@ -153,14 +69,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
-	for (uint16_t i = 0; i < BUFF_LEN; i++) {
-		audio_buff[i] = 0;
-	}
-
-	waveforms_initialize();
-	organ_oscillator_initialize();
-	rotary_speaker_initialize();
 
   /* USER CODE END 1 */
 
@@ -173,8 +81,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
-	ledInit();
 
   /* USER CODE END Init */
 
@@ -192,25 +98,16 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-	while (1)
-	{
-	    MIDI_ProcessUSBData();
-
-		if (timeOut(1000)) {
-			ledToggle();
-		}
-
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	}
+  }
   /* USER CODE END 3 */
 }
 
