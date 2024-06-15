@@ -130,6 +130,20 @@ uint8_t inline timeOut(uint32_t millis)
 	return 0;
 }
 
+
+uint8_t prevNote = 64;
+
+void CDC_Handle_Receive(uint8_t* Buf, uint32_t* Len) {
+	uint8_t newNote = std::atoi((const char*)Buf);
+
+	note_off (prevNote);
+	note_on (newNote);
+
+	prevNote = newNote;
+
+	CDC_Transmit_HS(Buf, (uint16_t)*Len);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -148,11 +162,6 @@ int main(void)
 	waveforms_initialize();
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
-
-	uint16_t currentNote = 64;
-
-	note_on(currentNote);
-
 
   /* USER CODE END 1 */
 
@@ -199,15 +208,6 @@ int main(void)
 			CDC_Transmit_HS((uint8_t*)hello, 7);
 
 			ledToggle();
-
-			note_off (currentNote);
-
-			currentNote++;
-
-			if (currentNote > 85)
-				currentNote = 64;
-
-			note_on (currentNote);
 		}
 
     /* USER CODE END WHILE */
