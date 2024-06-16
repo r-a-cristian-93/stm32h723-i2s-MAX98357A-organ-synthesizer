@@ -54,7 +54,6 @@
 
 void MIDI_ProcessIncomming(void);
 void MIDI_ProcessOutgoing(void);
-void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2);
-void MIDI_sendReport (uint8_t report[]);
+void MIDI_send(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2);
 
 #endif

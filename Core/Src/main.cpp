@@ -217,17 +217,17 @@ int main(void)
 		if (timeOut(1000)) {
 			ledToggle();
 
-//			MIDI_addToUSBReport(
-//				usbMidiMessage[0],
-//				usbMidiMessage[1],
-//				usbMidiMessage[2],
-//				usbMidiMessage[3]
-//			);
-//
-//			if (usbMidiMessage[1] == 144)
-//				usbMidiMessage[1] = 128;
-//			else
-//				usbMidiMessage[1] = 144;
+			MIDI_send(
+				usbMidiMessage[0],
+				usbMidiMessage[1],
+				usbMidiMessage[2],
+				usbMidiMessage[3]
+			);
+
+			if (usbMidiMessage[1] == 144)
+				usbMidiMessage[1] = 128;
+			else
+				usbMidiMessage[1] = 144;
 }
 
     /* USER CODE END WHILE */

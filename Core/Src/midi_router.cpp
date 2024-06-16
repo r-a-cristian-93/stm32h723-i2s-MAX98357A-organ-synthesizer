@@ -8,6 +8,7 @@
 
 #include <OrganEngine/NoteManager.h>
 
+#define USB_MIDI_MSG_LENGTH 4
 
 extern USBD_HandleTypeDef hUsbDeviceHS;
 
@@ -30,13 +31,8 @@ void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_lengt
     buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
     buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
 
-    usb_rx_buffer_length -= 4;
+    usb_rx_buffer_length -= USB_MIDI_MSG_LENGTH;
   }
-}
-
-void processMessage(uint8_t data)
-{
-	ledToggle();
 }
 
 void MIDI_ProcessIncomming(void)
@@ -73,22 +69,11 @@ void MIDI_ProcessIncomming(void)
 //  }
 
   if (midiThrough) {
-	  MIDI_addToUSBReport(cable, messageByte, param1, param2);
+	  MIDI_send(cable, messageByte, param1, param2);
   }
 
-  buffUsbInCurrIndex += 4;
+  buffUsbInCurrIndex += USB_MIDI_MSG_LENGTH;
 }
-
-#define MIDI_MSG_SIZE 4
-
-void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2)
-{
-  buffUsbOut[buffUsbOutNextIndex++] = (cable << 4) | (message >> 4);
-  buffUsbOut[buffUsbOutNextIndex++] = (message);
-  buffUsbOut[buffUsbOutNextIndex++] = (param1);
-  buffUsbOut[buffUsbOutNextIndex++] = (param2);
-}
-
 
 void MIDI_ProcessOutgoing(void)
 {
@@ -100,5 +85,13 @@ void MIDI_ProcessOutgoing(void)
 			buffUsbOutNextIndex = 0;
 		}
 	}
+}
+
+void MIDI_send(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2)
+{
+  buffUsbOut[buffUsbOutNextIndex++] = (cable << 4) | (message >> 4);
+  buffUsbOut[buffUsbOutNextIndex++] = (message);
+  buffUsbOut[buffUsbOutNextIndex++] = (param1);
+  buffUsbOut[buffUsbOutNextIndex++] = (param2);
 }
 
