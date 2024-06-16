@@ -52,7 +52,9 @@
 #define MIDI_MESSAGE_CONTROL_VALUE_MIDDLE 64
 #define MIDI_MESSAGE_DEFAULT_VOLUME       100
 
-void MIDI_ProcessUSBData(void);
+void MIDI_ProcessIncomming(void);
+void MIDI_ProcessOutgoing(void);
 void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2);
+void MIDI_sendReport (uint8_t report[]);
 
 #endif

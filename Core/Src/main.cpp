@@ -151,6 +151,14 @@ uint8_t prevNote = 64;
   * @brief  The application entry point.
   * @retval int
   */
+
+uint8_t usbMidiMessage[4] = {
+	0, // cable number, code index number
+	144, // note on, channel 1
+	64, // note number
+	127, // velocity
+};
+
 int main(void)
 {
 
@@ -203,15 +211,24 @@ int main(void)
 
 	while (1)
 	{
-	    MIDI_ProcessUSBData();
-
+	    MIDI_ProcessIncomming();
+	    MIDI_ProcessOutgoing();
 
 		if (timeOut(1000)) {
 			ledToggle();
 
-			uint8_t report[] = {0, 91, 64, 127};
-			MIDI_addToUSBReport(report[0], report[1], report[2], report[3]);
-		}
+			MIDI_addToUSBReport(
+				usbMidiMessage[0],
+				usbMidiMessage[1],
+				usbMidiMessage[2],
+				usbMidiMessage[3]
+			);
+
+			if (usbMidiMessage[1] == 144)
+				usbMidiMessage[1] = 128;
+			else
+				usbMidiMessage[1] = 144;
+}
 
     /* USER CODE END WHILE */
 

@@ -46,7 +46,7 @@ void processMessage(uint8_t data)
 }
 
 
-void MIDI_ProcessUSBData(void)
+void MIDI_ProcessIncomming(void)
 {
 
   static uint8_t lastMessagesBytePerCable[MIDI_CABLES_NUMBER] = {0};
@@ -137,18 +137,26 @@ void MIDI_ProcessUSBData(void)
   buffUsbCurrIndex += 4;
 }
 
+#define MIDI_MSG_SIZE 4
+
 void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2)
 {
   buffUsbReport[buffUsbReportNextIndex++] = (cable << 4) | (message >> 4);
   buffUsbReport[buffUsbReportNextIndex++] = (message);
   buffUsbReport[buffUsbReportNextIndex++] = (param1);
   buffUsbReport[buffUsbReportNextIndex++] = (param2);
+}
 
-  if (buffUsbReportNextIndex == MIDI_EPIN_SIZE)
-  {
-    while (USBD_MIDI_GetState(&hUsbDeviceHS) != MIDI_IDLE) {};
-    USBD_MIDI_SendReport(&hUsbDeviceHS, buffUsbReport, MIDI_EPIN_SIZE);
-    buffUsbReportNextIndex = 0;
-  }
+
+void MIDI_ProcessOutgoing(void)
+{
+	if (buffUsbReportNextIndex != 0)
+	{
+		if(USBD_MIDI_GetState(&hUsbDeviceHS) == MIDI_IDLE)
+		{
+			USBD_MIDI_SendReport(&hUsbDeviceHS, buffUsbReport, buffUsbReportNextIndex);
+			buffUsbReportNextIndex = 0;
+		}
+	}
 }
 
