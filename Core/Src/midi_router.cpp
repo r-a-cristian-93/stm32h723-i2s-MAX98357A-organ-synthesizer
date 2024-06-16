@@ -35,21 +35,16 @@ void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_lengt
   }
 }
 
+uint8_t cable;
+uint8_t messageByte;
+uint8_t message;
+uint8_t param1;
+uint8_t param2;
+
 void MIDI_ProcessIncomming(void)
 {
-//  static uint8_t lastMessagesBytePerCable[MIDI_CABLES_NUMBER] = {0};
-//  uint8_t *pLastMessageByte;
-  uint8_t cable;
-  uint8_t messageByte;
-  uint8_t message;
-  uint8_t param1;
-  uint8_t param2;
-//  void (*pSend)(uint8_t) = processMessage;
-
   if (buffUsbInCurrIndex == buffUsbInNextIndex)
-    return;
-
-//  note_on(64);
+	return;
 
   cable = (buffUsbIn[buffUsbInCurrIndex] >> 4);
   messageByte = buffUsbIn[buffUsbInCurrIndex + 1];
@@ -57,16 +52,16 @@ void MIDI_ProcessIncomming(void)
   param1 = buffUsbIn[buffUsbInCurrIndex + 2];
   param2 = buffUsbIn[buffUsbInCurrIndex + 3];
 
-//  switch (message) {
-//	  case MIDI_MESSAGE_NOTE_ON:
-//		  note_on(param1);
-//		  break;
-//	  case MIDI_MESSAGE_NOTE_OFF:
-//		  note_off(param1);
-//		  break;
-//	  default:
-//		  break;
-//  }
+  switch (message) {
+	  case MIDI_MESSAGE_NOTE_ON:
+		  note_on(param1);
+		  break;
+	  case MIDI_MESSAGE_NOTE_OFF:
+		  note_off(param1);
+		  break;
+	  default:
+		  break;
+  }
 
   if (midiThrough) {
 	  MIDI_send(cable, messageByte, param1, param2);

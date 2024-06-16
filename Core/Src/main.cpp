@@ -74,6 +74,7 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+__attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
@@ -86,9 +87,12 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
         {
 //            const std::lock_guard<std::mutex> lock(notesMutex);
 
-            for (Note &note : notesList)
+            for (uint8_t noteIndex = 0; noteIndex < MIDI_NOTES_COUNT; noteIndex++)
             {
-                sample += organ_oscillator_generate_sample(note);
+            	if (notesList[noteIndex].envelope.getState() != ADSR_IDLE)
+            	{
+            		sample += organ_oscillator_generate_sample(notesList[noteIndex]);
+            	}
             }
         }
 
@@ -171,6 +175,7 @@ int main(void)
 	waveforms_initialize();
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
+	note_manager_initialize() ;
 
   /* USER CODE END 1 */
 
@@ -214,21 +219,9 @@ int main(void)
 	    MIDI_ProcessIncomming();
 	    MIDI_ProcessOutgoing();
 
-		if (timeOut(1000)) {
+		if (timeOut(100)) {
 			ledToggle();
-
-			MIDI_send(
-				usbMidiMessage[0],
-				usbMidiMessage[1],
-				usbMidiMessage[2],
-				usbMidiMessage[3]
-			);
-
-			if (usbMidiMessage[1] == 144)
-				usbMidiMessage[1] = 128;
-			else
-				usbMidiMessage[1] = 144;
-}
+		}
 
     /* USER CODE END WHILE */
 
