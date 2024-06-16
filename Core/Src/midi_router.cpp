@@ -4,40 +4,34 @@
 #include "usb_device.h"
 #include "usbd_midi.h"
 #include "led.h"
+#include <stdbool.h>
 
 #include <OrganEngine/NoteManager.h>
 
 
 extern USBD_HandleTypeDef hUsbDeviceHS;
 
-static uint8_t buffUsbReport[MIDI_EPIN_SIZE] = {0};
-static uint8_t buffUsbReportNextIndex = 0;
+static uint8_t buffUsbOut[MIDI_EPIN_SIZE] = {0};
+static uint8_t buffUsbOutNextIndex = 0;
 
-static uint8_t buffUsb[MIDI_BUFFER_LENGTH] = {0};
-volatile static uint8_t buffUsbNextIndex = 0;
-static uint8_t buffUsbCurrIndex = 0;
+static uint8_t buffUsbIn[MIDI_BUFFER_LENGTH] = {0};
+volatile static uint8_t buffUsbInNextIndex = 0;
+static uint8_t buffUsbInCurrIndex = 0;
 
-//static uint8_t buffUart1[3] = {0};
-//static uint8_t buffUartIndex1 = 0;
-//static uint8_t msgUart1 = 0;
+bool midiThrough = true;
 
 
 void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_length)
 {
   while (usb_rx_buffer_length && *usb_rx_buffer != 0x00)
   {
-    buffUsb[buffUsbNextIndex++] = *usb_rx_buffer++;
-    buffUsb[buffUsbNextIndex++] = *usb_rx_buffer++;
-    buffUsb[buffUsbNextIndex++] = *usb_rx_buffer++;
-    buffUsb[buffUsbNextIndex++] = *usb_rx_buffer++;
+    buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
+    buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
+    buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
+    buffUsbIn[buffUsbInNextIndex++] = *usb_rx_buffer++;
 
     usb_rx_buffer_length -= 4;
   }
-}
-
-bool MIDI_HasUSBData(void)
-{
-  return buffUsbCurrIndex != buffUsbNextIndex;
 }
 
 void processMessage(uint8_t data)
@@ -45,117 +39,65 @@ void processMessage(uint8_t data)
 	ledToggle();
 }
 
-
 void MIDI_ProcessIncomming(void)
 {
-
-  static uint8_t lastMessagesBytePerCable[MIDI_CABLES_NUMBER] = {0};
-  uint8_t *pLastMessageByte;
+//  static uint8_t lastMessagesBytePerCable[MIDI_CABLES_NUMBER] = {0};
+//  uint8_t *pLastMessageByte;
   uint8_t cable;
   uint8_t messageByte;
   uint8_t message;
   uint8_t param1;
   uint8_t param2;
-  void (*pSend)(uint8_t) = processMessage;
+//  void (*pSend)(uint8_t) = processMessage;
 
-  if (buffUsbCurrIndex == buffUsbNextIndex)
+  if (buffUsbInCurrIndex == buffUsbInNextIndex)
     return;
 
 //  note_on(64);
 
-  cable = (buffUsb[buffUsbCurrIndex] >> 4);
-  messageByte = buffUsb[buffUsbCurrIndex + 1];
-
-  if (cable == 0)
-  {
-    pLastMessageByte = &lastMessagesBytePerCable[0];
-//    pSend = &UART1_Send;
-  }
-  else if (cable == 1)
-  {
-    pLastMessageByte = &lastMessagesBytePerCable[1];
-//    pSend = &UART2_Send;
-  }
-  else if (cable == 2)
-  {
-    pLastMessageByte = &lastMessagesBytePerCable[2];
-//    pSend = &UART3_Send;
-  }
-  else
-  {
-    goto midi_event_packet_processed;
-  }
-
+  cable = (buffUsbIn[buffUsbInCurrIndex] >> 4);
+  messageByte = buffUsbIn[buffUsbInCurrIndex + 1];
   message = (messageByte >> 4);
-  param1 = buffUsb[buffUsbCurrIndex + 2];
-  param2 = buffUsb[buffUsbCurrIndex + 3];
+  param1 = buffUsbIn[buffUsbInCurrIndex + 2];
+  param2 = buffUsbIn[buffUsbInCurrIndex + 3];
 
-  switch (message) {
-	  case MIDI_MESSAGE_NOTE_ON:
-		  note_on(param1);
-		  break;
-	  case MIDI_MESSAGE_NOTE_OFF:
-		  note_off(param1);
-		  break;
-	  default:
-		  break;
-  }
+//  switch (message) {
+//	  case MIDI_MESSAGE_NOTE_ON:
+//		  note_on(param1);
+//		  break;
+//	  case MIDI_MESSAGE_NOTE_OFF:
+//		  note_off(param1);
+//		  break;
+//	  default:
+//		  break;
+//  }
 
-  if ((messageByte & MIDI_MASK_REAL_TIME_MESSAGE) == MIDI_MASK_REAL_TIME_MESSAGE)
-  {
-    pSend(messageByte);
-  }
-  else if (message == MIDI_MESSAGE_CHANNEL_PRESSURE ||
-           message == MIDI_MESSAGE_PROGRAM_CHANGE ||
-           messageByte == MIDI_MESSAGE_TIME_CODE_QTR_FRAME ||
-           messageByte == MIDI_MESSAGE_SONG_SELECT)
-  {
-    if (*pLastMessageByte != messageByte)
-    {
-      pSend(messageByte);
-      *pLastMessageByte = messageByte;
-    }
-    pSend(param1);
-  }
-  else if (message == MIDI_MESSAGE_NOTE_ON ||
-           message == MIDI_MESSAGE_NOTE_OFF ||
-           message == MIDI_MESSAGE_KEY_PRESSURE ||
-           message == MIDI_MESSAGE_CONTROL_CHANGE ||
-           messageByte == MIDI_MESSAGE_SONG_POSITION ||
-           message == MIDI_MESSAGE_PITCH_BAND_CHANGE)
-  {
-    if (*pLastMessageByte != messageByte)
-    {
-      pSend(messageByte);
-      *pLastMessageByte = messageByte;
-    }
-    pSend(param1);
-    pSend(param2);
+  if (midiThrough) {
+	  MIDI_addToUSBReport(cable, messageByte, param1, param2);
   }
 
-  midi_event_packet_processed:
-  buffUsbCurrIndex += 4;
+  buffUsbInCurrIndex += 4;
 }
 
 #define MIDI_MSG_SIZE 4
 
 void MIDI_addToUSBReport(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2)
 {
-  buffUsbReport[buffUsbReportNextIndex++] = (cable << 4) | (message >> 4);
-  buffUsbReport[buffUsbReportNextIndex++] = (message);
-  buffUsbReport[buffUsbReportNextIndex++] = (param1);
-  buffUsbReport[buffUsbReportNextIndex++] = (param2);
+  buffUsbOut[buffUsbOutNextIndex++] = (cable << 4) | (message >> 4);
+  buffUsbOut[buffUsbOutNextIndex++] = (message);
+  buffUsbOut[buffUsbOutNextIndex++] = (param1);
+  buffUsbOut[buffUsbOutNextIndex++] = (param2);
 }
 
 
 void MIDI_ProcessOutgoing(void)
 {
-	if (buffUsbReportNextIndex != 0)
+	if (buffUsbOutNextIndex != 0)
 	{
 		if(USBD_MIDI_GetState(&hUsbDeviceHS) == MIDI_IDLE)
 		{
-			USBD_MIDI_SendReport(&hUsbDeviceHS, buffUsbReport, buffUsbReportNextIndex);
-			buffUsbReportNextIndex = 0;
+			USBD_MIDI_SendReport(&hUsbDeviceHS, buffUsbOut, buffUsbOutNextIndex);
+			buffUsbOutNextIndex = 0;
 		}
 	}
 }
