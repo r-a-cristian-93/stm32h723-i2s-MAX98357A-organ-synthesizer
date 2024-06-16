@@ -133,35 +133,12 @@ uint8_t inline timeOut(uint32_t millis)
 	return 0;
 }
 
-
-uint8_t prevNote = 64;
-
-
-
-//void CDC_Handle_Receive(uint8_t* Buf, uint32_t* Len) {
-//	uint8_t newNote = std::atoi((const char*)Buf);
-//
-//	note_off (prevNote);
-//	note_on (newNote);
-//
-//	prevNote = newNote;
-//
-//	CDC_Transmit_HS(Buf, (uint16_t)*Len);
-//}
-
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
-
-uint8_t usbMidiMessage[4] = {
-	0, // cable number, code index number
-	144, // note on, channel 1
-	64, // note number
-	127, // velocity
-};
 
 int main(void)
 {
@@ -175,7 +152,8 @@ int main(void)
 	waveforms_initialize();
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
-	note_manager_initialize() ;
+	note_manager_initialize();
+	ledInit();
 
   /* USER CODE END 1 */
 
@@ -189,7 +167,6 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-	ledInit();
 
   /* USER CODE END Init */
 
