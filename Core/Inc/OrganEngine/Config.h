@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define SAMPLE_RATE 44100.0
+#define SAMPLE_RATE 47991.0
 #define LUT_SIZE 1024
 
 #define M_2PI 6.28318530717958647692
