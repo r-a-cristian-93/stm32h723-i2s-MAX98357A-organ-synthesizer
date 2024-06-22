@@ -49,7 +49,7 @@ int16_t organ_oscillator_generate_sample(Note& note)
     }
 
     // right shift for the 9 drawbars
-    sample = sample >> 3;
+    sample = sample >> 2;
 
     sample = (sample * note.envelope.getAmplitude()) >> 16;
 

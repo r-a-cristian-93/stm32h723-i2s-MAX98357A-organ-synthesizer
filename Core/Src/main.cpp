@@ -57,8 +57,8 @@
 
 /* USER CODE BEGIN PV */
 
-#define BUFF_LEN 512
-#define BUFF_LEN_DIV2 256
+#define BUFF_LEN 128
+#define BUFF_LEN_DIV2 64
 
 uint16_t	audio_buff[BUFF_LEN];
 
@@ -79,7 +79,7 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
 	{
-        int16_t sample = 0;
+        int32_t sample = 0;
 
         organ_oscillator_update();
         rotary_speaker_parameters_update();
@@ -96,7 +96,8 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
             }
         }
 
-        sample = rotary_speaker_process_sample(sample);
+        sample += rotary_speaker_process_sample(sample);
+        sample = sample >> 1;
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
 
