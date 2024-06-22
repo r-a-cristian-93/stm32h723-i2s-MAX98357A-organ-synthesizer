@@ -96,7 +96,7 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
             }
         }
 
-//        sample = rotary_speaker_process_sample(sample);
+        sample = rotary_speaker_process_sample(sample);
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
 
