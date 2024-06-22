@@ -2,69 +2,23 @@
 #define NOTE_MANAGER_H
 
 #include <list>
-//#include <mutex>
 #include <OrganEngine/Note.h>
 #include <OrganEngine/Envelope.h>
 
 #define MAX_NOTES 128
 
 extern Note notesList[MAX_NOTES];
-//extern std::list<Note> notesList;
-//extern std::mutex notesMutex;
-
-
-// TO DO: Note.midiNote show be removed
 
 void note_manager_initialize();
 
-
-//__attribute__((always_inline)) inline
-//void clearSilencedNotes()
-//{
-////    const std::lock_guard<std::mutex> lock(notesMutex);
-//
-//    for (auto it = notesList.begin(); it != notesList.end(); it++)
-//    {
-//        // Remove one by one in the order they were added
-//        if (it->envelope.getState() == ADSR_IDLE)
-//        {
-//            notesList.erase(it++);
-//            break;
-//        }
-//    }
-//}
-
 __attribute__((always_inline)) inline
 void note_on(uint8_t midiNote) {
-//    const std::lock_guard<std::mutex> lock(notesMutex);
-//
-//	clearSilencedNotes();
-//
-//    notesList.emplace_back(Note{midiNote});
 	notesList[midiNote].envelope.noteOn();
 }
 
 __attribute__((always_inline)) inline
 void note_off(uint8_t midiNote) {
 	notesList[midiNote].envelope.noteOff();
-//    // Call NoteOff on first occurence
-////    const std::lock_guard<std::mutex> lock(notesMutex);
-//	uint32_t size = notesList.size();
-//
-//	if (size > 10) {
-//		size++;
-//		size++;
-//
-//	}
-//
-//    for (Note &note : notesList)
-//    {
-//        if (note.midiNote == midiNote && note.envelope.getState() != ADSR_IDLE)
-//        {
-//            note.envelope.noteOff();
-//            break;
-//        }
-//    }
 }
 
 #endif

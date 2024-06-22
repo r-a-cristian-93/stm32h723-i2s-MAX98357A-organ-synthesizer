@@ -4,6 +4,7 @@
 #include <OrganEngine/Note.h>
 #include <OrganEngine/Parameter.h>
 #include <OrganEngine/WaveTables.h>
+#include <iostream>
 
 extern float notePhaseIncrement[MIDI_NOTES_COUNT][DRAWBARS_COUNT];
 extern Parameter drawbarAmplitude[DRAWBARS_COUNT];
@@ -12,7 +13,7 @@ void organ_oscillator_initialize();
 void organ_oscillator_set_drawbar_amplitude(uint8_t drawbar, float amplitude);
 
 // Inline
-double organ_oscillator_generate_sample(Note& note);
+int16_t organ_oscillator_generate_sample(Note& note);
 void organ_oscillator_update();
 
 
@@ -26,15 +27,17 @@ void organ_oscillator_update()
 }
 
  __attribute__((always_inline)) inline
-double organ_oscillator_generate_sample(Note& note)
+int16_t organ_oscillator_generate_sample(Note& note)
 {
-    double sample = 0;
+    int32_t sample = 0;
+
 
     for (int drawbar_index = 0; drawbar_index < DRAWBARS_COUNT; drawbar_index++)
     {
-        sample += sine_table[(int)(note.phaseAccumulator[drawbar_index] )]
-            * drawbarAmplitude[drawbar_index].current_value * note.envelope.getAmplitude()
-            * HEADROOM_SCALE_FACTOR;
+        // 16bit * 16bit = 32bit
+        // right shift 16 to bring back in 16bit range
+        sample += ((sine_table[(int)(note.phaseAccumulator[drawbar_index])]
+            * drawbarAmplitude[drawbar_index].current_value) >> 16);
 
         note.phaseAccumulator[drawbar_index] += notePhaseIncrement[note.midiNote][drawbar_index];
 
@@ -45,7 +48,12 @@ double organ_oscillator_generate_sample(Note& note)
             note.phaseAccumulator[drawbar_index]  += LUT_SIZE;
     }
 
-    return sample;
+    // right shift for the 9 drawbars
+    sample = sample >> 3;
+
+    sample = (sample * note.envelope.getAmplitude()) >> 16;
+
+    return (int16_t) sample;
 }
 
 #endif

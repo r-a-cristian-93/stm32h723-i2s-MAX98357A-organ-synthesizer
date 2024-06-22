@@ -12,12 +12,13 @@ enum AdsrState
     ADSR_RELEASE
 };
 
+// Must use 32bit in order to properly reach 16bit limit values
 struct EnvelopeSettings
 {
-    float attackRate;
-    float decayRate;
-    float sustainLevel;
-    float releaseRate;
+    int32_t attackRate;
+    int32_t decayRate;
+    int32_t sustainLevel;
+    int32_t releaseRate;
 };
 
 extern EnvelopeSettings envelopeSettings;
@@ -25,43 +26,44 @@ extern EnvelopeSettings envelopeSettings;
 class Envelope
 {
     AdsrState state = ADSR_IDLE;
-    float amplitudeValue = 0.0;
+    int32_t amplitudeValue = 0;
 
 public:
     void noteOn();
     void noteOff();
 
     __attribute__((always_inline)) inline
-    float getAmplitude()
+    uint16_t getAmplitude()
     {
         switch (state) {
             case ADSR_IDLE:
-                break;
+            break;
             case ADSR_ATTACK:
                 amplitudeValue += envelopeSettings.attackRate;
                 if (amplitudeValue >= MAX_AMPLITUDE) {
                     amplitudeValue = MAX_AMPLITUDE;
                     state = ADSR_DECAY;
                 }
-                break;
+            break;
             case ADSR_DECAY:
                 amplitudeValue -= envelopeSettings.decayRate;
                 if (amplitudeValue <= envelopeSettings.sustainLevel) {
                     amplitudeValue = envelopeSettings.sustainLevel;
                     state = ADSR_SUSTAIN;
                 }
-                break;
+            break;
             case ADSR_SUSTAIN:
-                break;
+            break;
             case ADSR_RELEASE:
                 amplitudeValue -= envelopeSettings.releaseRate;
-                if (amplitudeValue <= MIN_AMPLITUDE) {
-                    amplitudeValue = MIN_AMPLITUDE;
+                if (amplitudeValue <= 0) {
+                    amplitudeValue = 0;
                     state = ADSR_IDLE;
                 }
+            break;
         }
 
-        return amplitudeValue;
+        return (int16_t) amplitudeValue;
     }
 
     __attribute__((always_inline)) inline

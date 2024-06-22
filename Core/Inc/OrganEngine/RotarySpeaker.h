@@ -17,7 +17,8 @@ extern int         rotarySpeaker_additionalDelay;
 extern RingBuffer  rotarySpeaker_ringBuffer;
 
 extern float       rotarySpeaker_lfoPhase;
-extern Parameter   rotarySpeaker_lfoPhaseIncrement;
+// extern Parameter   rotarySpeaker_lfoPhaseIncrement;
+extern float       rotarySpeaker_lfoPhaseIncrement;
 
 void rotary_speaker_initialize();
 void rotary_speaker_set_depth(float depth);
@@ -26,26 +27,29 @@ void rotary_speaker_set_velocity_slow();
 void rotary_speaker_set_velocity_off();
 
 // inline
-float rotary_speaker_process_sample(float input);
+int16_t rotary_speaker_process_sample(int16_t input);
 void rotary_speaker_lfo_advance();
 void rotary_speaker_parameters_update();
 
 
 __attribute__((always_inline)) inline
-float rotary_speaker_process_sample(float input)
+int16_t rotary_speaker_process_sample(int16_t input)
 {
-    float lfoValue = sine_table_lfo[(int)(rotarySpeaker_lfoPhase)];
+    float lfoValue = (float) (sine_table_lfo[(int)(rotarySpeaker_lfoPhase)]) / (MAX_AMPLITUDE);
     int maxDelay = BASE_DELAY_SEC * SAMPLE_RATE;
 
     float delay = lfoValue * rotarySpeaker_depth * maxDelay;
     delay += rotarySpeaker_additionalDelay;
 
-    float output = rotarySpeaker_ringBuffer.getHermiteAt(delay);
+    int16_t output = rotarySpeaker_ringBuffer.getHermiteAt(delay);
 
     rotarySpeaker_ringBuffer.write_margined(input);
 
     // Tremolo
-    output *= (lfoValue / 2.0 + 1.0);
+    // >> 4         bring lfo to range 0x0 - 0x7FF
+    // + 0x7800     bring lfo to range 0x7800 - 0x7FFF
+    // results 6.2% amplitude modulation
+    output = (output * ((sine_table_lfo[(int)(rotarySpeaker_lfoPhase)] >> 4) + 0x7FFF)) >> 15;
 
     rotary_speaker_lfo_advance();
 
@@ -55,7 +59,9 @@ float rotary_speaker_process_sample(float input)
 __attribute__((always_inline)) inline
 void rotary_speaker_lfo_advance()
 {
-    rotarySpeaker_lfoPhase += rotarySpeaker_lfoPhaseIncrement.current_value;
+    // rotarySpeaker_lfoPhase += rotarySpeaker_lfoPhaseIncrement.current_value;
+    rotarySpeaker_lfoPhase += rotarySpeaker_lfoPhaseIncrement;
+
 
     if (rotarySpeaker_lfoPhase  >= LUT_SIZE)
         rotarySpeaker_lfoPhase  -= LUT_SIZE;
@@ -67,7 +73,7 @@ void rotary_speaker_lfo_advance()
 __attribute__((always_inline)) inline
 void rotary_speaker_parameters_update()
 {
-    rotarySpeaker_lfoPhaseIncrement.update();
+    // rotarySpeaker_lfoPhaseIncrement.update();
 }
 
 #endif

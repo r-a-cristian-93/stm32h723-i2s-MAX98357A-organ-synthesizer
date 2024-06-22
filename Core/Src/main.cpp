@@ -79,7 +79,7 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
 	{
-        double sample = 0;
+        int16_t sample = 0;
 
         organ_oscillator_update();
         rotary_speaker_parameters_update();
@@ -96,9 +96,9 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
             }
         }
 
-        sample = rotary_speaker_process_sample(sample);
+//        sample = rotary_speaker_process_sample(sample);
 
-        uint16_t u_sample = (uint16_t) ((sample + 1.0) * ((0xFFF + 1) * 3));
+        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
 
         output[iFrame] = u_sample;
         output[iFrame +1 ] = u_sample;
