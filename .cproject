@@ -241,4 +241,5 @@
 			<resource resourceType="PROJECT" workspacePath="/basic_synth"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

@@ -77,35 +77,21 @@ static void MPU_Config(void);
 __attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
+    rotary_speaker_parameters_update();
+
+	int32_t sample = 0;
+
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
 	{
-        int32_t sample = 0;
-
-        organ_oscillator_update();
-        rotary_speaker_parameters_update();
-
-        {
-//            const std::lock_guard<std::mutex> lock(notesMutex);
-
-            for (uint8_t noteIndex = 0; noteIndex < MIDI_NOTES_COUNT; noteIndex++)
-            {
-            	if (notesList[noteIndex].envelope.getState() != ADSR_IDLE)
-            	{
-            		sample += organ_oscillator_generate_sample(notesList[noteIndex]);
-            	}
-            }
-        }
-
-        sample += rotary_speaker_process_sample(sample);
-        sample = sample >> 1;
+		sample = organ_oscillator_generate_sample();
+		sample += rotary_speaker_process_sample(sample);
+		sample = sample >> 1;
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
 
         output[iFrame] = u_sample;
         output[iFrame +1 ] = u_sample;
 	}
-
-
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
