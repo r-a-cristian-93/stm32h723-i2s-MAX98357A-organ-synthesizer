@@ -78,6 +78,8 @@ __attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
     rotary_speaker_parameters_update();
+    reset_tonewheel_amplitude();
+    set_tonewheels_amplitude();
 
 	int32_t sample = 0;
 
@@ -139,7 +141,6 @@ int main(void)
 	waveforms_initialize();
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
-	note_manager_initialize();
 	ledInit();
 
   /* USER CODE END 1 */

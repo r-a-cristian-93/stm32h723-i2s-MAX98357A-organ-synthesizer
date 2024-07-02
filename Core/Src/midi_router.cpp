@@ -59,6 +59,9 @@ void MIDI_ProcessIncomming(void)
 	  case MIDI_MESSAGE_NOTE_OFF:
 		  note_off(param1);
 		  break;
+	  case MIDI_MESSAGE_CONTROL_CHANGE:
+		  organ_oscillator_set_drawbar_amplitude(param1, param2);
+		  break;
 	  default:
 		  break;
   }
