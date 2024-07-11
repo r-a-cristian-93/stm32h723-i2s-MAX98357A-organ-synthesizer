@@ -33,6 +33,7 @@
 #include <OrganEngine/RotarySpeaker.h>
 #include <OrganEngine/WaveTables.h>
 #include <OrganEngine/NoteManager.h>
+#include <FmSynth/FmSynth.h>
 
 #include "midi_router.h"
 
@@ -74,26 +75,32 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+//__attribute((always_inline)) inline
+//void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
+//{
+//    rotary_speaker_parameters_update();
+//    reset_tonewheel_amplitude();
+//    set_tonewheels_amplitude();
+//
+//	int32_t sample = 0;
+//
+//	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
+//	{
+//		sample = organ_oscillator_generate_sample();
+//		sample += rotary_speaker_process_sample(sample);
+//		sample = sample >> 1;
+//
+//        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
+//
+//        output[iFrame] = u_sample;
+//        output[iFrame +1 ] = u_sample;
+//	}
+//}
+
 __attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
-    rotary_speaker_parameters_update();
-    reset_tonewheel_amplitude();
-    set_tonewheels_amplitude();
-
-	int32_t sample = 0;
-
-	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
-	{
-		sample = organ_oscillator_generate_sample();
-		sample += rotary_speaker_process_sample(sample);
-		sample = sample >> 1;
-
-        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
-
-        output[iFrame] = u_sample;
-        output[iFrame +1 ] = u_sample;
-	}
+	fm_synth_get_samples(output, startFrame, endFrame);
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
@@ -141,6 +148,7 @@ int main(void)
 	waveforms_initialize();
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
+	fm_synth_init();
 	ledInit();
 
   /* USER CODE END 1 */
