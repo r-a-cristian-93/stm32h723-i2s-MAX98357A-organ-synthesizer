@@ -7,7 +7,8 @@
 #include <stdbool.h>
 
 #include <OrganEngine/NoteManager.h>
-#include <FmSynth/FmSynth.h>
+//#include <FmSynth/FmSynth.h>
+#include <WaveOrgan/WaveOrgan.h>
 
 #define USB_MIDI_MSG_LENGTH 4
 
@@ -58,24 +59,30 @@ void MIDI_ProcessIncomming(void)
 
   switch (message) {
 	  case MIDI_MESSAGE_NOTE_ON:
-		  fm_synth_note_on(param1, 1);
-		  fm_synth_note_on(param1, 2);
-		  fm_synth_note_on(param1, 3);
-		  fm_synth_note_on(param1, 4);
-//		  fm_synth_note_on(param1, 5);
+		  wav_organ_note_on(param1);
 
-		  note_on(param1);
+//		  fm_synth_note_on(param1, 1);
+//		  fm_synth_note_on(param1, 2);
+//		  fm_synth_note_on(param1, 3);
+//		  fm_synth_note_on(param1, 4);
+//		  fm_synth_note_on(param1, 5);
+//		  note_on(param1);
 		  break;
 	  case MIDI_MESSAGE_NOTE_OFF:
-		  fm_synth_note_off(param1, 1);
-		  fm_synth_note_off(param1, 2);
-		  fm_synth_note_off(param1, 3);
-		  fm_synth_note_off(param1, 4);
+		  wav_organ_note_off(param1);
+
+//		  fm_synth_note_off(param1, 1);
+//		  fm_synth_note_off(param1, 2);
+//		  fm_synth_note_off(param1, 3);
+//		  fm_synth_note_off(param1, 4);
 //		  fm_synth_note_off(param1, 5);
-		  note_off(param1);
+//		  note_off(param1);
 		  break;
 	  case MIDI_MESSAGE_CONTROL_CHANGE:
 		  organ_oscillator_set_drawbar_amplitude(param1, param2);
+
+		  if (param1 == MIDI_MESSAGE_BANK_SELECT_MSB)
+			  wave_organ_set_voice(param2);
 		  break;
 	  default:
 		  break;

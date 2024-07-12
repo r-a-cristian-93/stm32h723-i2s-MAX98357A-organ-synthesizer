@@ -34,6 +34,7 @@
 #include <OrganEngine/WaveTables.h>
 #include <OrganEngine/NoteManager.h>
 #include <FmSynth/FmSynth.h>
+#include <WaveOrgan/WaveOrgan.h>
 
 #include "midi_router.h"
 
@@ -97,10 +98,28 @@ static void MPU_Config(void);
 //	}
 //}
 
+//__attribute((always_inline)) inline
+//void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
+//{
+//	fm_synth_get_samples(output, startFrame, endFrame);
+//}
+
 __attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
-	fm_synth_get_samples(output, startFrame, endFrame);
+	int32_t sample = 0;
+
+	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
+	{
+		sample = wave_organ_generate_sample();
+//		sample += rotary_speaker_process_sample(sample);
+//		sample = sample >> 3;
+
+        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
+
+        output[iFrame] = u_sample;
+        output[iFrame +1 ] = u_sample;
+	}
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
@@ -149,6 +168,7 @@ int main(void)
 	organ_oscillator_initialize();
 	rotary_speaker_initialize();
 	fm_synth_init();
+	wave_organ_init();
 	ledInit();
 
   /* USER CODE END 1 */
