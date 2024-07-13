@@ -20,8 +20,8 @@ float       rotarySpeaker_lfoPhaseIncrement = ROTARY_SPEAKER_FAST;
 void rotary_speaker_initialize()
 {
 	rotarySpeaker_ringBuffer.resize(BASE_DELAY_SEC * SAMPLE_RATE * 2);
-	rotary_speaker_set_depth(0.5);
-	rotary_speaker_set_velocity_fast();
+	rotary_speaker_set_depth(0.9);
+	rotary_speaker_set_velocity_slow();
 }
 
 void rotary_speaker_set_depth(float depth)
@@ -39,9 +39,17 @@ void rotary_speaker_set_velocity_fast() {
 }
 
 void rotary_speaker_set_velocity_slow() {
-    // rotarySpeaker_lfoPhaseIncrement.setValue(ROTARY_SPEAKER_SLOW);
+	rotarySpeaker_lfoPhaseIncrement = ROTARY_SPEAKER_SLOW;
 }
 
 void rotary_speaker_set_velocity_off() {
     // rotarySpeaker_lfoPhaseIncrement.setValue(ROTARY_SPEAKER_OFF);
 }
+
+void rotary_speaker_set_speed(uint8_t midiParam) {
+	if (midiParam == 0)
+		rotarySpeaker_lfoPhaseIncrement = 0;
+	else
+	rotarySpeaker_lfoPhaseIncrement = (midiParam)*(10.0/127.0) * PHASE_LUT_SCALE_FACTOR;
+}
+

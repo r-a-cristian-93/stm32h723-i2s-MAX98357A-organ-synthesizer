@@ -25,6 +25,7 @@ void rotary_speaker_set_depth(float depth);
 void rotary_speaker_set_velocity_fast();
 void rotary_speaker_set_velocity_slow();
 void rotary_speaker_set_velocity_off();
+void rotary_speaker_set_speed(uint8_t midiParam);
 
 // inline
 int16_t rotary_speaker_process_sample(int16_t input);

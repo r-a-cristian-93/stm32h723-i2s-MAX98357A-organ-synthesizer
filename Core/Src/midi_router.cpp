@@ -9,6 +9,7 @@
 #include <OrganEngine/NoteManager.h>
 //#include <FmSynth/FmSynth.h>
 #include <WaveOrgan/WaveOrgan.h>
+#include <OrganEngine/RotarySpeaker.h>
 
 #define USB_MIDI_MSG_LENGTH 4
 
@@ -67,7 +68,7 @@ void MIDI_ProcessIncomming(void)
 //		  fm_synth_note_on(param1, 4);
 //		  fm_synth_note_on(param1, 5);
 //		  note_on(param1);
-		  break;
+	  break;
 	  case MIDI_MESSAGE_NOTE_OFF:
 		  wav_organ_note_off(param1);
 
@@ -77,15 +78,21 @@ void MIDI_ProcessIncomming(void)
 //		  fm_synth_note_off(param1, 4);
 //		  fm_synth_note_off(param1, 5);
 //		  note_off(param1);
-		  break;
+	  break;
 	  case MIDI_MESSAGE_CONTROL_CHANGE:
+	  {
 		  organ_oscillator_set_drawbar_amplitude(param1, param2);
 
 		  if (param1 == MIDI_MESSAGE_BANK_SELECT_MSB)
 			  wave_organ_set_voice(param2);
-		  break;
+		  else if (param1 == MIDI_MESSAGE_BASS_VOLUME)
+			  wave_organ_set_bass_volume(param2);
+		  else if (param1 == MIDI_MESSAGE_ROTARY_SPEED)
+			  rotary_speaker_set_speed(param2);
+	  }
+	  break;
 	  default:
-		  break;
+	  break;
   }
 
   if (midiThrough) {
