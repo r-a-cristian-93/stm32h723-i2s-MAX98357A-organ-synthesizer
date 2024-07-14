@@ -59,7 +59,7 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
         }
     }
 
-	return sample >> 2;
+	return sample >> 4;
 }
 
 __attribute__((always_inline)) inline
@@ -77,12 +77,12 @@ void wave_organ_init()
 
 __attribute__((always_inline)) inline
 void wav_organ_note_on(uint8_t midiNote) {
-    wav_notes[midiNote -36] = true;
+    wav_notes[midiNote -24] = true;
 }
 
 __attribute__((always_inline)) inline
 void wav_organ_note_off(uint8_t midiNote) {
-    wav_notes[midiNote-36] = false;
+    wav_notes[midiNote-24] = false;
 }
 
 __attribute__((always_inline)) inline

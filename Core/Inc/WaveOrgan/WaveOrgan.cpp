@@ -6,7 +6,6 @@ float wav_frequency[MIDI_NOTES_COUNT] = {0};
 bool wav_notes[MIDI_NOTES_COUNT] = {false};
 uint8_t wav_bass_volume = 127;
 
-
 int16_t voice_lut[32][LUT_SIZE] = {0};
 int16_t* wav_active_voice = voice_lut[0];
 

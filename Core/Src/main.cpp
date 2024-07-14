@@ -35,6 +35,7 @@
 #include <OrganEngine/NoteManager.h>
 #include <FmSynth/FmSynth.h>
 #include <WaveOrgan/WaveOrgan.h>
+#include <DrumMachine/DrumMachine.h>
 
 #include "midi_router.h"
 
@@ -112,11 +113,14 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
 	{
 		sample = wave_organ_generate_sample();
-		sample += rotary_speaker_process_sample(sample);
-		sample = sample >> 1;
+
+		// += adds a nice synthy chorus effect :)
+		sample = rotary_speaker_process_sample(sample);
+
+		sample += drum_machine_generate_sample();
+//		sample = sample >> 1;
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
-
         output[iFrame] = u_sample;
         output[iFrame +1 ] = u_sample;
 	}
