@@ -11,6 +11,7 @@ float tonewheelPhaseIncrement[TONEWHEELS] = {0};
 float tonewheelPhase[TONEWHEELS] = {0};
 uint16_t tonewheelAmplitude[TONEWHEELS] = {0};
 uint8_t tonewheelMap[MANUAL_KEYS][DRAWBARS_COUNT] = {{0}};
+int16_t* tonewheelWaveform = smooth_triangle_table;
 
 void drawbar_amplitude_update()
 {
@@ -88,7 +89,7 @@ int foldback(uint8_t tonewheel) {
     while (tonewheel < 12) {
         tonewheel += 12;
     }
-    while (tonewheel > 91) {
+    while (tonewheel >= 91) {
         tonewheel -= 12;
     }
     return tonewheel;

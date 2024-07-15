@@ -1,55 +1,26 @@
 #include "RotarySpeaker.h"
 
-float       rotarySpeaker_depth;
+#define ROTARY_SPEAKER_FAST (6.0 * PHASE_LUT_SCALE_FACTOR)
+#define ROTARY_SPEAKER_SLOW (2.0 * PHASE_LUT_SCALE_FACTOR)
+#define ROTARY_SPEAKER_OFF (0.0)
+
+#define MAX_ROTATING_FREQUENCY_HZ (10.0)
+#define MAX_MIDI_VALUE (127)
+
+
 int         rotarySpeaker_additionalDelay = 3;
 RingBuffer  rotarySpeaker_ringBuffer;
 
 float       rotarySpeaker_lfoPhase;
 float       rotarySpeaker_lfoPhaseIncrement = ROTARY_SPEAKER_FAST;
 
-// Parameter   rotarySpeaker_lfoPhaseIncrement
-// {
-//     ROTARY_SPEAKER_FAST,
-//     ROTARY_SPEAKER_FAST,
-//     0.001,
-//     ROTARY_SPEAKER_FAST,
-//     0.0,
-//     0.01 / SAMPLE_RATE
-// };
-
 void rotary_speaker_initialize()
 {
 	rotarySpeaker_ringBuffer.resize(BASE_DELAY_SEC * SAMPLE_RATE * 2);
-	rotary_speaker_set_depth(0.9);
-	rotary_speaker_set_velocity_slow();
-}
-
-void rotary_speaker_set_depth(float depth)
-{
-	if (depth < 0)
-		rotarySpeaker_depth = 0;
-	else if (depth > 1)
-		rotarySpeaker_depth = 1;
-	else
-		rotarySpeaker_depth = depth;
-}
-
-void rotary_speaker_set_velocity_fast() {
-    // rotarySpeaker_lfoPhaseIncrement.setValue(ROTARY_SPEAKER_FAST);
-}
-
-void rotary_speaker_set_velocity_slow() {
-	rotarySpeaker_lfoPhaseIncrement = ROTARY_SPEAKER_SLOW;
-}
-
-void rotary_speaker_set_velocity_off() {
-    // rotarySpeaker_lfoPhaseIncrement.setValue(ROTARY_SPEAKER_OFF);
+	rotary_speaker_set_speed(127);
 }
 
 void rotary_speaker_set_speed(uint8_t midiParam) {
-	if (midiParam == 0)
-		rotarySpeaker_lfoPhaseIncrement = 0;
-	else
-	rotarySpeaker_lfoPhaseIncrement = (midiParam)*(10.0/127.0) * PHASE_LUT_SCALE_FACTOR;
+	rotarySpeaker_lfoPhaseIncrement = midiParam * (MAX_ROTATING_FREQUENCY_HZ / MAX_MIDI_VALUE) * PHASE_LUT_SCALE_FACTOR;
 }
 
