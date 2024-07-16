@@ -16,7 +16,7 @@ EnvelopeSettings envelope_settings;
 
 void envelope_initialize() {
     envelope_settings.attackRate = 50.0 / SAMPLE_RATE;
-    envelope_settings.decayRate = 0.3 / SAMPLE_RATE;
+    envelope_settings.decayRate = 0.4 / SAMPLE_RATE;
     envelope_settings.releaseRate = 5.0 / SAMPLE_RATE;
     envelope_settings.sustainLevel = 0.0;
 }

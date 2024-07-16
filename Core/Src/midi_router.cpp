@@ -9,7 +9,6 @@
 #include <OrganEngine/NoteManager.h>
 //#include <FmSynth/FmSynth.h>
 #include <WaveOrgan/WaveOrgan.h>
-#include <WaveOrgan/WavePiano.h>
 #include <OrganEngine/RotarySpeaker.h>
 #include <DrumMachine/DrumMachine.h>
 
@@ -65,7 +64,6 @@ void MIDI_ProcessIncomming(void)
   switch (message) {
 	  case MIDI_MESSAGE_NOTE_ON:
 		  wav_organ_note_on(param1);
-		  wav_piano_note_on(param1);
 
 		  if (channel == DRUM_CHANNEL) {
 			  drum_machine_play(param1, param2);
@@ -80,7 +78,6 @@ void MIDI_ProcessIncomming(void)
 	  break;
 	  case MIDI_MESSAGE_NOTE_OFF:
 		  wav_organ_note_off(param1);
-		  wav_piano_note_off(param1);
 
 //		  fm_synth_note_off(param1, 1);
 //		  fm_synth_note_off(param1, 2);
@@ -95,6 +92,8 @@ void MIDI_ProcessIncomming(void)
 
 		  if (param1 == MIDI_MESSAGE_BANK_SELECT_MSB)
 			  wave_organ_set_voice(param2);
+		  else if (param1 == MIDI_MESSAGE_ORCHESTRA_VOLUME)
+		  			  wave_organ_set_orchestra_volume(param2);
 		  else if (param1 == MIDI_MESSAGE_BASS_VOLUME)
 			  wave_organ_set_bass_volume(param2);
 		  else if (param1 == MIDI_MESSAGE_ROTARY_SPEED)
