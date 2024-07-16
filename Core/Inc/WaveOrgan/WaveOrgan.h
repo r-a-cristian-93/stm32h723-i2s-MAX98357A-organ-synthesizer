@@ -23,6 +23,19 @@ constexpr uint8_t VOICES_COUNT = 5;
 #include <WaveOrgan/bass.h>
 #include <WaveOrgan/Envelope.h>
 
+struct LPF {
+    int32_t output = 0.0;
+    uint8_t alpha = 110;
+
+    int32_t getSample(int32_t input) {
+
+        output = ((127 - alpha) * input + alpha * output) >> 7;
+
+        return output;
+    }
+};
+
+extern LPF lpf;
 
 extern float wav_phase[MIDI_NOTES_COUNT];
 extern float wav_phaseIncrement[MIDI_NOTES_COUNT];
@@ -58,6 +71,8 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
 		float envelopeAmpl = envelope_get_amplitude(&wav_notes[noteIndex]) * 127;
         sample += (int32_t)((float)wav_active_voice[(uint16_t) wav_phase[noteIndex]] * envelopeAmpl);
 
+        // lpf
+        sample = lpf.getSample(sample);
 
 		wav_phase[noteIndex] += wav_phaseIncrement[noteIndex];
 
@@ -74,7 +89,7 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
 
     //   voice * vol * inst * keys
     // ( 32767 * 127 *  3   *  20 ) >> 13 = 30479
-	return sample >> 12;
+	return sample >> 13;
 }
 
 __attribute__((always_inline)) inline
@@ -108,6 +123,11 @@ void wave_organ_set_orchestra_volume(uint8_t volume) {
 __attribute__((always_inline)) inline
 void wave_organ_set_bass_volume(uint8_t volume) {
     wav_bass_volume = volume;
+}
+
+__attribute__((always_inline)) inline
+void wave_organ_set_lpf(uint8_t alpha) {
+    lpf.alpha = alpha;
 }
 
 

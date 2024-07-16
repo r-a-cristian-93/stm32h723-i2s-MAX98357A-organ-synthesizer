@@ -96,6 +96,8 @@ void MIDI_ProcessIncomming(void)
 		  			  wave_organ_set_orchestra_volume(param2);
 		  else if (param1 == MIDI_MESSAGE_BASS_VOLUME)
 			  wave_organ_set_bass_volume(param2);
+		  else if (param1 == MIDI_MESSAGE_LPF)
+			  wave_organ_set_lpf(param2);
 		  else if (param1 == MIDI_MESSAGE_ROTARY_SPEED)
 			  rotary_speaker_set_speed(param2);
 	  }
