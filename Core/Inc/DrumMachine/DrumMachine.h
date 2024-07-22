@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define INSTRUMENTS_COUNT (4)
+#define INSTRUMENTS_COUNT (5)
 
 struct DrumInstrument {
     const int16_t* lut;
@@ -26,7 +26,8 @@ __attribute__((always_inline)) inline int32_t drum_machine_generate_sample()
 		if (ins.playing == false)
 			continue;
 
-        sample += (ins.lut[ins.phase] * ins.velocity) >> 7;
+        // 0x7FFF * 7F >> 7 = 0x7EFF
+        sample += (ins.lut[ins.phase] * ins.velocity);
 
 		ins.phase++;
 
@@ -34,7 +35,7 @@ __attribute__((always_inline)) inline int32_t drum_machine_generate_sample()
             ins.playing = false;
     }
 
-	return sample >> 5;
+	return sample >> 12;
 }
 
 __attribute__((always_inline)) inline
