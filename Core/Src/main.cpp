@@ -20,6 +20,7 @@
 #include "main.h"
 #include "dma.h"
 #include "i2s.h"
+#include "spi.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -156,7 +157,6 @@ uint8_t inline timeOut(uint32_t millis)
   * @brief  The application entry point.
   * @retval int
   */
-
 int main(void)
 {
 
@@ -202,6 +202,7 @@ int main(void)
   MX_DMA_Init();
   MX_I2S3_Init();
   MX_USB_DEVICE_Init();
+  MX_SPI6_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
