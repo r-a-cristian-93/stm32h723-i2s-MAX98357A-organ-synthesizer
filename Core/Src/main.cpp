@@ -151,6 +151,63 @@ uint8_t inline timeOut(uint32_t millis)
 	return 0;
 }
 
+bool inline areAllEqual(const uint8_t* array) {
+    return (array[0] == array[1]) &&
+           (array[1] == array[2]) &&
+           (array[2] == array[3]) &&
+           (array[3] == array[4]) &&
+           (array[4] == array[5]) &&
+           (array[5] == array[6]) &&
+           (array[6] == array[7]);
+}
+
+uint8_t data[8] = {0};
+uint8_t prevBit[8] = {0};
+uint8_t buffer_index = 0;
+
+void readSpi6() {
+    // Set PL high to enable serial loading mode
+    HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_SET);
+
+    // Set RESET high (inactive)
+//    HAL_GPIO_WritePin(RESET_GPIO_Port, RESET_Pin, GPIO_PIN_SET);
+
+    // Set ST_CP high to latch data into the shift registers
+    HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_SET);
+//    HAL_Delay(1); // Short delay
+//    for (volatile int i = 0; i < 10; i++);
+
+    HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_RESET);
+
+    // Read 8 bytes of data from the shift registers
+    HAL_SPI_Receive(&hspi6, &data[buffer_index], 1, HAL_MAX_DELAY);
+
+    HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
+
+
+	buffer_index++;
+
+	if (buffer_index >= 8) {
+		buffer_index = 0;
+		if (areAllEqual(data)) {
+
+			for (int i = 0; i < 8; ++i) {
+				uint8_t bit = (data[0] >> i) & 1;
+
+				if (bit != prevBit[i]) {
+					prevBit[i] = bit;
+
+					if (bit != 0)
+					   wav_organ_note_on(i+72);
+					else
+						wav_organ_note_off(i+72);
+				}
+			}
+		}
+	}
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -216,6 +273,8 @@ int main(void)
 	{
 	    MIDI_ProcessIncomming();
 	    MIDI_ProcessOutgoing();
+
+	    readSpi6();
 
 		if (timeOut(100)) {
 			ledToggle();
