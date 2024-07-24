@@ -3,7 +3,6 @@
 
 #include <OrganEngine/Config.h>
 #include <OrganEngine/RingBuffer.h>
-#include <OrganEngine/Parameter.h>
 #include <OrganEngine/WaveTables.h>
 
 #define BASE_DELAY_SEC (0.002)

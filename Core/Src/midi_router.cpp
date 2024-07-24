@@ -6,8 +6,6 @@
 #include "led.h"
 #include <stdbool.h>
 
-#include <OrganEngine/NoteManager.h>
-//#include <FmSynth/FmSynth.h>
 #include <WaveOrgan/WaveOrgan.h>
 #include <OrganEngine/RotarySpeaker.h>
 #include <DrumMachine/DrumMachine.h>
@@ -68,28 +66,12 @@ void MIDI_ProcessIncomming(void)
 		  if (channel == DRUM_CHANNEL) {
 			  drum_machine_play(param1, param2);
 		  }
-
-//		  fm_synth_note_on(param1, 1);
-//		  fm_synth_note_on(param1, 2);
-//		  fm_synth_note_on(param1, 3);
-//		  fm_synth_note_on(param1, 4);
-//		  fm_synth_note_on(param1, 5);
-//		  note_on(param1);
 	  break;
 	  case MIDI_MESSAGE_NOTE_OFF:
 		  wav_organ_note_off(param1);
-
-//		  fm_synth_note_off(param1, 1);
-//		  fm_synth_note_off(param1, 2);
-//		  fm_synth_note_off(param1, 3);
-//		  fm_synth_note_off(param1, 4);
-//		  fm_synth_note_off(param1, 5);
-//		  note_off(param1);
 	  break;
 	  case MIDI_MESSAGE_CONTROL_CHANGE:
 	  {
-		  organ_oscillator_set_drawbar_amplitude(param1, param2);
-
 		  if (param1 == MIDI_MESSAGE_BANK_SELECT_MSB)
 			  wave_organ_set_voice(param2);
 		  else if (param1 == MIDI_MESSAGE_ORCHESTRA_VOLUME)

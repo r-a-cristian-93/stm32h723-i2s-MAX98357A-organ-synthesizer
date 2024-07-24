@@ -30,11 +30,8 @@
 #include "led.h"
 
 #include <OrganEngine/Config.h>
-#include <OrganEngine/OrganOscillator.h>
 #include <OrganEngine/RotarySpeaker.h>
 #include <OrganEngine/WaveTables.h>
-#include <OrganEngine/NoteManager.h>
-#include <FmSynth/FmSynth.h>
 #include <WaveOrgan/WaveOrgan.h>
 #include <DrumMachine/DrumMachine.h>
 #include <DrumMachine/Sequencer.h>
@@ -224,9 +221,7 @@ int main(void)
 	}
 
 	waveforms_initialize();
-	organ_oscillator_initialize();
 	rotary_speaker_initialize();
-	fm_synth_init();
 	wave_organ_init();
 	envelope_initialize();
 	sequencer_init();
