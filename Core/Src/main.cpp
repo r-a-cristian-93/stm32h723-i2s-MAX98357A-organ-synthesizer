@@ -64,6 +64,9 @@
 
 uint16_t	audio_buff[BUFF_LEN];
 
+
+void readSpi6();
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,7 +121,7 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
         output[iFrame] = u_sample;
-        output[iFrame +1 ] = u_sample;
+        output[iFrame + 1] = u_sample;
 	}
 }
 
@@ -132,23 +135,21 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
 	getSamples(audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
 }
 
-
-uint8_t inline timeOut(uint32_t millis)
+bool inline timeOut(uint32_t& tim, uint32_t millis)
 {
-	static uint32_t tickStart = 0;
 	uint32_t nowTicks = HAL_GetTick();
 
-	if (nowTicks - tickStart > millis)
+	if (nowTicks - tim > millis)
 	{
-		tickStart = nowTicks;
+		tim = nowTicks;
 
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
-bool inline areAllEqual(const uint8_t* array) {
+bool inline areAllEqual(const uint16_t* array) {
     return (array[0] == array[1]) &&
            (array[1] == array[2]) &&
            (array[2] == array[3]) &&
@@ -158,9 +159,16 @@ bool inline areAllEqual(const uint8_t* array) {
            (array[6] == array[7]);
 }
 
-uint8_t data[8] = {0};
-uint8_t prevBit[8] = {0};
+#define SHIFT_REGISTER_SAMPLES (8)
+#define SHIFT_REGISTER_BITS_COUNT (16)
+
+uint16_t data[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t prevBit[SHIFT_REGISTER_BITS_COUNT] = {0};
 uint8_t buffer_index = 0;
+uint8_t dataByte1 = 0;
+uint8_t dataByte2 = 0;
+
+uint8_t incommingBytes[2] = {0};
 
 void readSpi6() {
     // Set PL high to enable serial loading mode
@@ -177,19 +185,23 @@ void readSpi6() {
     HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_RESET);
 
     // Read 8 bytes of data from the shift registers
-    HAL_SPI_Receive(&hspi6, &data[buffer_index], 1, HAL_MAX_DELAY);
+
+    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
+
+    data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
+//    data[buffer_index] = dataByte1;
 
     HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
 
 
 	buffer_index++;
 
-	if (buffer_index >= 8) {
+	if (buffer_index >= SHIFT_REGISTER_SAMPLES) {
 		buffer_index = 0;
 		if (areAllEqual(data)) {
 
-			for (int i = 0; i < 8; ++i) {
-				uint8_t bit = (data[0] >> i) & 1;
+			for (int i = 0; i < SHIFT_REGISTER_BITS_COUNT; ++i) {
+				uint16_t bit = (data[0] >> i) & 1;
 
 				if (bit != prevBit[i]) {
 					prevBit[i] = bit;
@@ -215,6 +227,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	uint32_t timBlink = 0;
+	uint32_t timSpi = 0;
 
 	for (uint16_t i = 0; i < BUFF_LEN; i++) {
 		audio_buff[i] = 0;
@@ -269,10 +283,12 @@ int main(void)
 	    MIDI_ProcessIncomming();
 	    MIDI_ProcessOutgoing();
 
-	    readSpi6();
-
-		if (timeOut(100)) {
+	    if (timeOut(timBlink, 100)) {
 			ledToggle();
+		}
+
+		if (timeOut(timSpi, 1)) {
+			readSpi6();
 		}
 
     /* USER CODE END WHILE */
