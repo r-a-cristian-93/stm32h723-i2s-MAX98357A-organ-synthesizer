@@ -79,34 +79,6 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//__attribute((always_inline)) inline
-//void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
-//{
-//    rotary_speaker_parameters_update();
-//    reset_tonewheel_amplitude();
-//    set_tonewheels_amplitude();
-//
-//	int32_t sample = 0;
-//
-//	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
-//	{
-//		sample = organ_oscillator_generate_sample();
-//		sample += rotary_speaker_process_sample(sample);
-//		sample = sample >> 1;
-//
-//        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
-//
-//        output[iFrame] = u_sample;
-//        output[iFrame +1 ] = u_sample;
-//	}
-//}
-
-//__attribute((always_inline)) inline
-//void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
-//{
-//	fm_synth_get_samples(output, startFrame, endFrame);
-//}
-
 __attribute((always_inline)) inline
 void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 {
@@ -184,15 +156,12 @@ void readSpi6() {
 
     HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_RESET);
 
-    // Read 8 bytes of data from the shift registers
-
+    // Read 2 bytes of data from the shift registers
     HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
 
     data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
-//    data[buffer_index] = dataByte1;
 
     HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
-
 
 	buffer_index++;
 
