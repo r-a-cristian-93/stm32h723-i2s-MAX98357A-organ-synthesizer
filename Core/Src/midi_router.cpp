@@ -74,6 +74,8 @@ void MIDI_ProcessIncomming(void)
 	  {
 		  if (param1 == MIDI_MESSAGE_BANK_SELECT_MSB)
 			  wave_organ_set_voice(param2);
+		  else if (param1 == MIDI_MESSAGE_BANK_SELECT_LSB)
+			  wave_organ_set_effect(param2);
 		  else if (param1 == MIDI_MESSAGE_ORCHESTRA_VOLUME)
 			  wave_organ_set_orchestra_volume(param2);
 		  else if (param1 == MIDI_MESSAGE_BASS_VOLUME)

@@ -196,6 +196,7 @@ uint32_t adcBuffer[ADC_BUFFER_SIZE] = {0};
 uint32_t adcValue = 0;
 uint8_t paramRotarySpeed = 0;
 uint8_t paramOrchestraInstrument = 0;
+uint8_t paramBassVolume = 0;
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
@@ -209,12 +210,12 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 			adcBuffer[6] +
 			adcBuffer[7];
 
-	adcValue = adcValue >> 14;
+	adcValue = adcValue >> 12;
 
-	if (adcValue != paramOrchestraInstrument)
+	if (adcValue != paramBassVolume)
 	{
-		paramOrchestraInstrument = (uint8_t) adcValue;
-		wave_organ_set_voice(paramOrchestraInstrument);
+		paramBassVolume = (uint8_t) adcValue;
+		wave_organ_set_bass_volume(paramBassVolume);
 	}
 }
 
