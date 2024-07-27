@@ -191,31 +191,28 @@ void readSpi6() {
 
 
 
-#define ADC_BUFFER_SIZE (8)
+#define ADC_BUFFER_SIZE (2)
 uint32_t adcBuffer[ADC_BUFFER_SIZE] = {0};
-uint32_t adcValue = 0;
 uint8_t paramRotarySpeed = 0;
 uint8_t paramOrchestraInstrument = 0;
 uint8_t paramBassVolume = 0;
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	uint32_t adcValue =
-			adcBuffer[0] +
-			adcBuffer[1] +
-			adcBuffer[2] +
-			adcBuffer[3] +
-			adcBuffer[4] +
-			adcBuffer[5] +
-			adcBuffer[6] +
-			adcBuffer[7];
 
-	adcValue = adcValue >> 12;
+	uint32_t adcBassValue = adcBuffer[0] >> 9;
+	uint32_t adcRotaryValue = adcBuffer[1] >> 9;
 
-	if (adcValue != paramBassVolume)
+	if (adcBassValue != paramBassVolume)
 	{
-		paramBassVolume = (uint8_t) adcValue;
+		paramBassVolume = (uint8_t) adcBassValue;
 		wave_organ_set_bass_volume(paramBassVolume);
+	}
+
+	if (adcRotaryValue != paramRotarySpeed)
+	{
+		paramRotarySpeed = (uint8_t) adcRotaryValue;
+		rotary_speaker_set_speed(paramRotarySpeed);
 	}
 }
 
