@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "dma.h"
 #include "i2s.h"
 #include "spi.h"
@@ -71,6 +72,7 @@ void readSpi6();
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
@@ -185,6 +187,8 @@ void readSpi6() {
 	}
 }
 
+uint32_t adcValue = 0;
+
 
 /* USER CODE END 0 */
 
@@ -228,6 +232,9 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+/* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -238,6 +245,7 @@ int main(void)
   MX_I2S3_Init();
   MX_USB_DEVICE_Init();
   MX_SPI6_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
@@ -252,8 +260,11 @@ int main(void)
 	    MIDI_ProcessIncomming();
 	    MIDI_ProcessOutgoing();
 
-	    if (timeOut(timBlink, 100)) {
+	    if (timeOut(timBlink,100)) {
 			ledToggle();
+			HAL_ADC_Start(&hadc1);
+			HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+			adcValue = HAL_ADC_GetValue(&hadc1);
 		}
 
 		if (timeOut(timSpi, 1)) {
@@ -324,6 +335,33 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_SPI3;
+  PeriphClkInitStruct.PLL2.PLL2M = 25;
+  PeriphClkInitStruct.PLL2.PLL2N = 172;
+  PeriphClkInitStruct.PLL2.PLL2P = 8;
+  PeriphClkInitStruct.PLL2.PLL2Q = 2;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
