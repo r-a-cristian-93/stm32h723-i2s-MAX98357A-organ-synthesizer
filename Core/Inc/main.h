@@ -57,10 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define HC597_LATCH_CLOCK_Pin GPIO_PIN_4
-#define HC597_LATCH_CLOCK_GPIO_Port GPIOC
-#define HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin GPIO_PIN_5
-#define HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port GPIOC
+#define HC597_LATCH_CLOCK_Pin GPIO_PIN_8
+#define HC597_LATCH_CLOCK_GPIO_Port GPIOE
+#define HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin GPIO_PIN_9
+#define HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port GPIOE
 #define CODEC_RESET_Pin GPIO_PIN_4
 #define CODEC_RESET_GPIO_Port GPIOD
 
