@@ -63,11 +63,30 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* i2sHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(i2sHandle->Instance==SPI3)
   {
   /* USER CODE BEGIN SPI3_MspInit 0 */
 
   /* USER CODE END SPI3_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI3;
+    PeriphClkInitStruct.PLL2.PLL2M = 25;
+    PeriphClkInitStruct.PLL2.PLL2N = 172;
+    PeriphClkInitStruct.PLL2.PLL2P = 8;
+    PeriphClkInitStruct.PLL2.PLL2Q = 2;
+    PeriphClkInitStruct.PLL2.PLL2R = 2;
+    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
+    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
     /* I2S3 clock enable */
     __HAL_RCC_SPI3_CLK_ENABLE();
 
