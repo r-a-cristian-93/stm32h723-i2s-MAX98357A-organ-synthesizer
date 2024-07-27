@@ -22,6 +22,7 @@
 #include "dma.h"
 #include "i2s.h"
 #include "spi.h"
+#include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -91,6 +92,8 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 		sample = wave_organ_generate_sample();
 		sample = rotary_speaker_process_sample(sample);
 		sample += drum_machine_generate_sample();
+
+		sample = sample >> 1;
 
         uint16_t u_sample = (uint16_t) sample + (0xFFFF);
         output[iFrame] = u_sample;
@@ -186,18 +189,38 @@ void readSpi6() {
 	}
 }
 
-#define ADC_BUFFER_SIZE (2)
+
+
+#define ADC_BUFFER_SIZE (8)
 uint32_t adcBuffer[ADC_BUFFER_SIZE] = {0};
 uint32_t adcValue = 0;
+uint8_t paramRotarySpeed = 0;
+uint8_t paramOrchestraInstrument = 0;
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	adcValue = adcBuffer[0];
+	uint32_t adcValue =
+			adcBuffer[0] +
+			adcBuffer[1] +
+			adcBuffer[2] +
+			adcBuffer[3] +
+			adcBuffer[4] +
+			adcBuffer[5] +
+			adcBuffer[6] +
+			adcBuffer[7];
+
+	adcValue = adcValue >> 14;
+
+	if (adcValue != paramOrchestraInstrument)
+	{
+		paramOrchestraInstrument = (uint8_t) adcValue;
+		wave_organ_set_voice(paramOrchestraInstrument);
+	}
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	adcValue = adcBuffer[1];
+	// DO NOTHING
 }
 
 
@@ -254,10 +277,12 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_SPI6_Init();
   MX_ADC1_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
 	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
+	HAL_TIM_Base_Start(&htim6);
 
   /* USER CODE END 2 */
 
