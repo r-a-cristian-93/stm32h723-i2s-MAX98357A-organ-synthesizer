@@ -28,8 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-#include "eko_tiger_p61.hpp"
+#include "eko_tiger_p61.h"
 
 /* USER CODE END Includes */
 

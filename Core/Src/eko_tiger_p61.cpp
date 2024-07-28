@@ -1,3 +1,5 @@
+#include "eko_tiger_p61.h"
+
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
@@ -13,7 +15,6 @@
 #include <WaveOrgan/WaveOrgan.h>
 #include <DrumMachine/DrumMachine.h>
 #include <DrumMachine/Sequencer.h>
-#include <eko_tiger_p61.hpp>
 
 uint32_t timBlink = 0;
 uint32_t timSpi = 0;

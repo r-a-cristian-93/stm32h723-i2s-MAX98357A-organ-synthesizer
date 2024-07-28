@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include "stm32h7xx_hal.h"
-#include "stdbool.h"
 
 #define MIDI_UART1_CABLE   0x00
 #define MIDI_CABLES_NUMBER 3
