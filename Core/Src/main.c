@@ -103,7 +103,6 @@ int main(void)
   MX_SPI6_Init();
   MX_ADC1_Init();
   MX_TIM6_Init();
-
   /* USER CODE BEGIN 2 */
 
   eko_tiger_p61_setup();
@@ -115,9 +114,9 @@ int main(void)
 
   eko_tiger_p61_loop();
 
-  /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 
   /* USER CODE END 3 */
 }
