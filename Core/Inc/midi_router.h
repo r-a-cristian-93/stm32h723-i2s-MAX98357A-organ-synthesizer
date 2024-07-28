@@ -1,6 +1,9 @@
-
 #ifndef MIDI_H
 #define MIDI_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "stm32h7xx_hal.h"
 #include "stdbool.h"
@@ -62,5 +65,9 @@
 void MIDI_ProcessIncomming(void);
 void MIDI_ProcessOutgoing(void);
 void MIDI_send(uint8_t cable, uint8_t message, uint8_t param1, uint8_t param2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

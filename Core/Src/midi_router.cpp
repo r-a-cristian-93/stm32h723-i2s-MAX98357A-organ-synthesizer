@@ -1,6 +1,5 @@
 
 #include "midi_router.h"
-//#include "usart.h"
 #include "usb_device.h"
 #include "usbd_midi.h"
 #include "led.h"
