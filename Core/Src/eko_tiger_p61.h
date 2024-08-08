@@ -47,9 +47,9 @@ void eko_tiger_p61_loop()
 			ledToggle();
 		}
 
-		if (timeOut(&timSpi, 1)) {
-			readSpi6();
-		}
+//		if (timeOut(&timSpi, 1)) {
+//			readSpi6();
+//		}
 	}
 }
 

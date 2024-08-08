@@ -2,8 +2,8 @@
 
 #include "main.h"
 #include "adc.h"
+#include "dac.h"
 #include "dma.h"
-#include "i2s.h"
 #include "spi.h"
 #include "tim.h"
 #include "usb_device.h"
@@ -23,14 +23,14 @@ uint32_t timSpi = 0;
 #define BUFF_LEN 128
 #define BUFF_LEN_DIV2 64
 
-uint16_t	audio_buff[BUFF_LEN];
+uint32_t	audio_buff[BUFF_LEN];
 
 __attribute((always_inline)) inline
-void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
+void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 {
 	int32_t sample = 0;
 
-	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame += 2)
+	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame++)
 	{
 		sequencer_tick();
 		sample = wave_organ_generate_sample();
@@ -39,18 +39,18 @@ void getSamples(uint16_t output[], uint16_t startFrame, uint16_t endFrame)
 
 		sample = sample >> 1;
 
-        uint16_t u_sample = (uint16_t) sample + (0xFFFF);
+		uint32_t u_sample = (uint32_t) sample + (0x7FF);
+
         output[iFrame] = u_sample;
-        output[iFrame + 1] = u_sample;
 	}
 }
 
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
+void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
 	getSamples(audio_buff, 0, BUFF_LEN_DIV2);
 }
 
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
+void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
 	getSamples(audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
 }
@@ -164,8 +164,11 @@ void eko_tiger_p61_setup()
 	sequencer_init();
 	ledInit();
 
-	HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t *) audio_buff, BUFF_LEN);
-	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
+
 	HAL_TIM_Base_Start(&htim6);
+	HAL_TIM_Base_Start(&htim7);
+	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, audio_buff, BUFF_LEN, DAC_ALIGN_12B_R);
+
 }
 

@@ -1,0 +1,5 @@
+stm32h723		max9837
+--------------------------------
+PA4	I2S3_WS		LRC
+PB2	I2S3_SDO	DIN
+PC10	I2S3_CK		BCLK
