@@ -92,9 +92,11 @@ void readSpi6() {
     HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_RESET);
 
     // Read 2 bytes of data from the shift registers
-    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, incommingBytes, 1, HAL_MAX_DELAY);
 
-    data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
+//    data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
+    data[buffer_index] = (incommingBytes[0] << 8) | 0;
 
     HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
 
@@ -105,7 +107,7 @@ void readSpi6() {
 		if (areAllEqual(data)) {
 
 			for (int i = 0; i < SHIFT_REGISTER_BITS_COUNT; ++i) {
-				uint16_t bit = (data[0] >> i) & 1;
+				uint16_t bit = data[0] & (1 << i);
 
 				if (bit != prevBit[i]) {
 					prevBit[i] = bit;
@@ -137,12 +139,16 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 	{
 		paramBassVolume = (uint8_t) adcBassValue;
 		wave_organ_set_bass_volume(paramBassVolume);
+
+		ledToggle();
 	}
 
 	if (adcRotaryValue != paramRotarySpeed)
 	{
 		paramRotarySpeed = (uint8_t) adcRotaryValue;
 		rotary_speaker_set_speed(paramRotarySpeed);
+
+		ledToggle();
 	}
 }
 

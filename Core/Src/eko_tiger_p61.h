@@ -43,13 +43,13 @@ void eko_tiger_p61_loop()
 	    MIDI_ProcessIncomming();
 	    MIDI_ProcessOutgoing();
 
-	    if (timeOut(&timBlink,100)) {
-			ledToggle();
-		}
-
-//		if (timeOut(&timSpi, 1)) {
-//			readSpi6();
+//	    if (timeOut(&timBlink,100)) {
+//			ledToggle();
 //		}
+
+		if (timeOut(&timSpi, 1)) {
+			readSpi6();
+		}
 	}
 }
 

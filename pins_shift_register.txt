@@ -1,10 +1,10 @@
-1 - B
-2 - C
-3 - D
-4 - R
-5 - F
-6 - G
-7 - H
+1 - B    				3k3 ohm to ground for idle / VCC o enable
+2 - C    				3k3 ohm to ground for idle / VCC o enable
+3 - D    				3k3 ohm to ground for idle / VCC o enable
+4 - R    				3k3 ohm to ground for idle / VCC o enable
+5 - F    				3k3 ohm to ground for idle / VCC o enable
+6 - G    				3k3 ohm to ground for idle / VCC o enable
+7 - H    				3k3 ohm to ground for idle / VCC o enable
 8 - GND
 9 - QH, Serial data output		SPI_MISO		(PA6)
 10 - RESET				GPIO / pull high        VCC
