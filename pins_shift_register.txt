@@ -6,11 +6,11 @@
 6 - G    				3k3 ohm to ground for idle / VCC o enable
 7 - H    				3k3 ohm to ground for idle / VCC o enable
 8 - GND
-9 - QH, Serial data output		SPI_MISO		(PA6)
-10 - RESET				GPIO / pull high        VCC
-11 - SHIFT CLOCK			SPI_SCK			(PA5)
-12 - LATCH CLOCK			GPIO			(PE8)
-13 - SERIAL SHIFT / PARALLEL LOAD	GPIO			(PE9)
-14 - SA, Serial data input		GND for first in chain else to prev QH
+9 - QH, Serial data output		SPI_MISO		(PA6)		verde
+10 - RESET				GPIO / pull high        VCC		rosu
+11 - SHIFT CLOCK			SPI_SCK			(PA5)		portocaliu
+12 - LATCH CLOCK			GPIO			(PE8)		galben
+13 - SERIAL SHIFT / PARALLEL LOAD	GPIO			(PE9)		alb
+14 - SA, Serial data input		GND for first in chain else to prev QH	verde
 15 - A
-16 - VCC                                VCC                      VCC
+16 - VCC                                VCC                      VCC		rosu

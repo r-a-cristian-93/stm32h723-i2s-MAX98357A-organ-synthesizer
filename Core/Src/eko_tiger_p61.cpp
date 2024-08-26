@@ -67,6 +67,7 @@ bool areAllEqual(const uint16_t* array) {
 }
 
 #define SHIFT_REGISTER_SAMPLES (8)
+#define SHIFT_REGISTER_BYTES_COUNT (4)
 #define SHIFT_REGISTER_BITS_COUNT (16)
 
 uint16_t data[SHIFT_REGISTER_SAMPLES] = {0};
@@ -75,7 +76,8 @@ uint8_t buffer_index = 0;
 uint8_t dataByte1 = 0;
 uint8_t dataByte2 = 0;
 
-uint8_t incommingBytes[2] = {0};
+uint8_t incommingBytes[SHIFT_REGISTER_BYTES_COUNT] = {0};
+
 
 void readSpi6() {
     // Set PL high to enable serial loading mode
@@ -93,7 +95,7 @@ void readSpi6() {
 
     // Read 2 bytes of data from the shift registers
 //    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, incommingBytes, 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, incommingBytes, 4, HAL_MAX_DELAY);
 
 //    data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
     data[buffer_index] = (incommingBytes[0] << 8) | 0;
@@ -173,8 +175,9 @@ void eko_tiger_p61_setup()
 
 	HAL_TIM_Base_Start(&htim6);
 	HAL_TIM_Base_Start(&htim7);
-	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
 	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, audio_buff, BUFF_LEN, DAC_ALIGN_12B_R);
 
+	HAL_ADCEx_Calibration_Start(&hadc1,  ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED);
+	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
 }
 
