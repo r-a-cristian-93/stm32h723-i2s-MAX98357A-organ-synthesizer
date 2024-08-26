@@ -71,7 +71,7 @@ bool areAllEqual(const uint16_t* array) {
 
 #define SHIFT_REGISTER_SAMPLES (8)
 #define SHIFT_REGISTER_BYTES_COUNT (4)
-#define SHIFT_REGISTER_BITS_COUNT (8)
+#define SHIFT_REGISTER_BITS_COUNT (16)
 
 uint16_t data0[SHIFT_REGISTER_SAMPLES] = {0};
 uint16_t data1[SHIFT_REGISTER_SAMPLES] = {0};
@@ -104,10 +104,10 @@ void readSpi6() {
 
     // Read 2 bytes of data0 from the shift registers
 //    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, &incommingBytes[0], 1, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, &incommingBytes[1], 1, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, &incommingBytes[2], 1, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, &incommingBytes[3], 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, &incommingBytes[1], 1, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, &incommingBytes[2], 1, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, &incommingBytes[3], 1, HAL_MAX_DELAY);
 
 //    data0[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
     data0[buffer_index] = incommingBytes[0];
