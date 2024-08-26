@@ -26,6 +26,9 @@ uint32_t timSpi = 0;
 uint32_t	audio_buff[BUFF_LEN];
 
 __attribute((always_inline)) inline
+void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset);
+
+__attribute((always_inline)) inline
 void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 {
 	int32_t sample = 0;
@@ -68,10 +71,16 @@ bool areAllEqual(const uint16_t* array) {
 
 #define SHIFT_REGISTER_SAMPLES (8)
 #define SHIFT_REGISTER_BYTES_COUNT (4)
-#define SHIFT_REGISTER_BITS_COUNT (16)
+#define SHIFT_REGISTER_BITS_COUNT (8)
 
-uint16_t data[SHIFT_REGISTER_SAMPLES] = {0};
-uint16_t prevBit[SHIFT_REGISTER_BITS_COUNT] = {0};
+uint16_t data0[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data1[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data2[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data3[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t prevBits0[SHIFT_REGISTER_BITS_COUNT] = {0};
+uint16_t prevBits1[SHIFT_REGISTER_BITS_COUNT] = {0};
+uint16_t prevBits2[SHIFT_REGISTER_BITS_COUNT] = {0};
+uint16_t prevBits3[SHIFT_REGISTER_BITS_COUNT] = {0};
 uint8_t buffer_index = 0;
 uint8_t dataByte1 = 0;
 uint8_t dataByte2 = 0;
@@ -93,12 +102,18 @@ void readSpi6() {
 
     HAL_GPIO_WritePin(HC597_LATCH_CLOCK_GPIO_Port, HC597_LATCH_CLOCK_Pin, GPIO_PIN_RESET);
 
-    // Read 2 bytes of data from the shift registers
+    // Read 2 bytes of data0 from the shift registers
 //    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, incommingBytes, 4, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, &incommingBytes[0], 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, &incommingBytes[1], 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, &incommingBytes[2], 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, &incommingBytes[3], 1, HAL_MAX_DELAY);
 
-//    data[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
-    data[buffer_index] = (incommingBytes[0] << 8) | 0;
+//    data0[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
+    data0[buffer_index] = incommingBytes[0];
+    data1[buffer_index] = incommingBytes[1];
+    data2[buffer_index] = incommingBytes[2];
+    data3[buffer_index] = incommingBytes[3];
 
     HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
 
@@ -106,19 +121,26 @@ void readSpi6() {
 
 	if (buffer_index >= SHIFT_REGISTER_SAMPLES) {
 		buffer_index = 0;
-		if (areAllEqual(data)) {
+		handleBitsChange(data0, prevBits0, 0);
+		handleBitsChange(data1, prevBits1, 8);
+		handleBitsChange(data2, prevBits2, 16);
+		handleBitsChange(data3, prevBits3, 24);
+	}
+}
 
-			for (int i = 0; i < SHIFT_REGISTER_BITS_COUNT; ++i) {
-				uint16_t bit = data[0] & (1 << i);
+void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset) {
+	if (areAllEqual(dataArray)) {
 
-				if (bit != prevBit[i]) {
-					prevBit[i] = bit;
+		for (int i = 0; i < SHIFT_REGISTER_BITS_COUNT; ++i) {
+			uint16_t bit = dataArray[0] & (1 << i);
 
-					if (bit != 0)
-					   wav_organ_note_on(i+72);
-					else
-						wav_organ_note_off(i+72);
-				}
+			if (bit != prevBitsArray[i]) {
+				prevBitsArray[i] = bit;
+
+				if (bit != 0)
+				   wav_organ_note_on(i + noteOffset + 72);
+				else
+					wav_organ_note_off(i + noteOffset + 72);
 			}
 		}
 	}
