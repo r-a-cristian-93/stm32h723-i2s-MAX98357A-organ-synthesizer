@@ -35,6 +35,10 @@ bool timeOut(uint32_t* tim, uint32_t millis)
 	return false;
 }
 
+
+void toggleNote();
+
+
 __attribute((always_inline)) inline
 void eko_tiger_p61_loop()
 {
@@ -50,6 +54,10 @@ void eko_tiger_p61_loop()
 		if (timeOut(&timSpi, 1)) {
 			readSpi6();
 		}
+
+//		if (timeOut(&timBlink, 500)) {
+//			toggleNote();
+//		}
 	}
 }
 

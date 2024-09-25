@@ -38,9 +38,9 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		sequencer_tick();
 		sample = wave_organ_generate_sample();
 		sample = rotary_speaker_process_sample(sample);
-		sample += drum_machine_generate_sample();
-
-		sample = sample >> 1;
+//		sample += drum_machine_generate_sample();
+//
+//		sample = sample >> 1;
 
 		uint32_t u_sample = (uint32_t) sample + (0x7FF);
 
@@ -70,20 +70,26 @@ bool areAllEqual(const uint16_t* array) {
 }
 
 #define SHIFT_REGISTER_SAMPLES (8)
-#define SHIFT_REGISTER_BYTES_COUNT (4)
-#define SHIFT_REGISTER_BITS_COUNT (16)
+#define SHIFT_REGISTER_BYTES_COUNT (8)
+#define SHIFT_REGISTER_BITS_COUNT (8)
 
 uint16_t data0[SHIFT_REGISTER_SAMPLES] = {0};
 uint16_t data1[SHIFT_REGISTER_SAMPLES] = {0};
 uint16_t data2[SHIFT_REGISTER_SAMPLES] = {0};
 uint16_t data3[SHIFT_REGISTER_SAMPLES] = {0};
-uint16_t prevBits0[SHIFT_REGISTER_BITS_COUNT] = {0};
-uint16_t prevBits1[SHIFT_REGISTER_BITS_COUNT] = {0};
-uint16_t prevBits2[SHIFT_REGISTER_BITS_COUNT] = {0};
-uint16_t prevBits3[SHIFT_REGISTER_BITS_COUNT] = {0};
+uint16_t data4[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data5[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data6[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t data7[SHIFT_REGISTER_SAMPLES] = {0};
+uint16_t prevBits0[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits1[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits2[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits3[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits4[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits5[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits6[SHIFT_REGISTER_BITS_COUNT] = {1};
+uint16_t prevBits7[SHIFT_REGISTER_BITS_COUNT] = {1};
 uint8_t buffer_index = 0;
-uint8_t dataByte1 = 0;
-uint8_t dataByte2 = 0;
 
 uint8_t incommingBytes[SHIFT_REGISTER_BYTES_COUNT] = {0};
 
@@ -104,16 +110,23 @@ void readSpi6() {
 
     // Read 2 bytes of data0 from the shift registers
 //    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi6, incommingBytes, 2, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi6, incommingBytes, SHIFT_REGISTER_BYTES_COUNT, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, incommingBytes, 1, HAL_MAX_DELAY);
+
+
 //    HAL_SPI_Receive(&hspi6, &incommingBytes[1], 1, HAL_MAX_DELAY);
 //    HAL_SPI_Receive(&hspi6, &incommingBytes[2], 1, HAL_MAX_DELAY);
-//    HAL_SPI_Receive(&hspi6, &incommingBytes[3], 1, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi6, &incommingBytes[3], 1, HAL_MAX_DELAY);+-
 
 //    data0[buffer_index] = (incommingBytes[0] << 8) | incommingBytes[1];
     data0[buffer_index] = incommingBytes[0];
     data1[buffer_index] = incommingBytes[1];
     data2[buffer_index] = incommingBytes[2];
     data3[buffer_index] = incommingBytes[3];
+    data4[buffer_index] = incommingBytes[4];
+    data5[buffer_index] = incommingBytes[5];
+    data6[buffer_index] = incommingBytes[6];
+    data7[buffer_index] = incommingBytes[7];
 
     HAL_GPIO_WritePin(HC597_SERIAL_SHIFT_PARALLEL_LOAD_GPIO_Port, HC597_SERIAL_SHIFT_PARALLEL_LOAD_Pin, GPIO_PIN_RESET);
 
@@ -125,6 +138,10 @@ void readSpi6() {
 		handleBitsChange(data1, prevBits1, 8);
 		handleBitsChange(data2, prevBits2, 16);
 		handleBitsChange(data3, prevBits3, 24);
+		handleBitsChange(data4, prevBits4, 32);
+		handleBitsChange(data5, prevBits5, 40);
+		handleBitsChange(data6, prevBits6, 48);
+		handleBitsChange(data7, prevBits7, 56);
 	}
 }
 
@@ -137,10 +154,10 @@ void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t note
 			if (bit != prevBitsArray[i]) {
 				prevBitsArray[i] = bit;
 
-				if (bit != 0)
-				   wav_organ_note_on(i + noteOffset + 72);
+				if (bit == 0)
+				   wav_organ_note_on(i + noteOffset + 36);
 				else
-					wav_organ_note_off(i + noteOffset + 72);
+					wav_organ_note_off(i + noteOffset + 36);
 			}
 		}
 	}
@@ -203,3 +220,18 @@ void eko_tiger_p61_setup()
 	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
 }
 
+
+uint8_t note_state = 0;
+
+void toggleNote() {
+	if (note_state == 0)
+	{
+		note_state = 1;
+		wav_organ_note_on(60);
+	}
+	else
+	{
+		note_state = 0;
+		wav_organ_note_off(60);
+	}
+}
