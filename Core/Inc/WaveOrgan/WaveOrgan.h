@@ -115,7 +115,7 @@ void wave_organ_init()
     fill_voice_combinations();
     fill_effect_combinations();
     wave_organ_set_voice(1);
-    wave_organ_set_effect(1);
+    wave_organ_set_effect(0);
 }
 
 __attribute__((always_inline)) inline

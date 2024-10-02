@@ -15,9 +15,11 @@ void eko_tiger_p61_loop();
 bool timeOut(uint32_t* tim, uint32_t millis);
 bool areAllEqual(const uint16_t* array);
 void readSpi6();
+void readDigitalInputs();
 
 extern uint32_t timBlink;
 extern uint32_t timSpi;
+extern uint32_t timDigitalInputs;
 
 
 __attribute((always_inline)) inline
@@ -53,6 +55,10 @@ void eko_tiger_p61_loop()
 
 		if (timeOut(&timSpi, 1)) {
 			readSpi6();
+		}
+
+		if (timeOut(&timDigitalInputs, 100)) {
+			readDigitalInputs();
 		}
 
 //		if (timeOut(&timBlink, 500)) {

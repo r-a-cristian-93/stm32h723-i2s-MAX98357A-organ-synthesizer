@@ -18,6 +18,7 @@
 
 uint32_t timBlink = 0;
 uint32_t timSpi = 0;
+uint32_t timDigitalInputs = 0;
 
 
 #define BUFF_LEN 128
@@ -143,6 +144,25 @@ void readSpi6() {
 		handleBitsChange(data6, prevBits6, 48);
 		handleBitsChange(data7, prevBits7, 56);
 	}
+}
+
+uint8_t orchestraVoice = 0;
+
+void readDigitalInputs() {
+	const int dinFlute8 = HAL_GPIO_ReadPin(DIN_ORCHESTRA_FLUTE_8_GPIO_Port, DIN_ORCHESTRA_FLUTE_8_Pin);
+	const int dinFlute4 = HAL_GPIO_ReadPin(DIN_ORCHESTRA_FLUTE_4_GPIO_Port, DIN_ORCHESTRA_FLUTE_4_Pin);
+	const int dinViolin = HAL_GPIO_ReadPin(DIN_ORCHESTRA_VIOLIN_GPIO_Port, DIN_ORCHESTRA_VIOLIN_Pin);
+	const int dinTrumpet = HAL_GPIO_ReadPin(DIN_ORCHESTRA_TRUMPET_GPIO_Port, DIN_ORCHESTRA_TRUMPET_Pin);
+	const int dinClarinet = HAL_GPIO_ReadPin(DIN_ORCHESTRA_CLARINET_GPIO_Port, DIN_ORCHESTRA_CLARINET_Pin);
+
+	orchestraVoice = 0;
+	orchestraVoice |= (dinFlute8 << 0);
+	orchestraVoice |= (dinFlute4 << 1);
+	orchestraVoice |= (dinViolin << 2);
+	orchestraVoice |= (dinTrumpet << 3);
+	orchestraVoice |= (dinClarinet << 4);
+
+	wave_organ_set_voice(orchestraVoice);
 }
 
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset) {
