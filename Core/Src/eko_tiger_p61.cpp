@@ -175,9 +175,9 @@ void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t note
 				prevBitsArray[i] = bit;
 
 				if (bit == 0)
-				   wav_organ_note_on(i + noteOffset + 36);
+				   wav_organ_note_on(i + noteOffset + 48);
 				else
-					wav_organ_note_off(i + noteOffset + 36);
+					wav_organ_note_off(i + noteOffset + 48);
 			}
 		}
 	}
