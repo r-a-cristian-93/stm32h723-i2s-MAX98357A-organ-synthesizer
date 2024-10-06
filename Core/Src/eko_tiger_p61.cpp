@@ -148,21 +148,15 @@ void readSpi6() {
 
 uint8_t orchestraVoice = 0;
 
+#define DIN_CONTROLS_PORT GPIOD
+#define DIN_ORCHESTRA_MASK (0b00011111)
+
 void readDigitalInputs() {
-	const int dinFlute8 = HAL_GPIO_ReadPin(DIN_ORCHESTRA_FLUTE_8_GPIO_Port, DIN_ORCHESTRA_FLUTE_8_Pin);
-	const int dinFlute4 = HAL_GPIO_ReadPin(DIN_ORCHESTRA_FLUTE_4_GPIO_Port, DIN_ORCHESTRA_FLUTE_4_Pin);
-	const int dinViolin = HAL_GPIO_ReadPin(DIN_ORCHESTRA_VIOLIN_GPIO_Port, DIN_ORCHESTRA_VIOLIN_Pin);
-	const int dinTrumpet = HAL_GPIO_ReadPin(DIN_ORCHESTRA_TRUMPET_GPIO_Port, DIN_ORCHESTRA_TRUMPET_Pin);
-	const int dinClarinet = HAL_GPIO_ReadPin(DIN_ORCHESTRA_CLARINET_GPIO_Port, DIN_ORCHESTRA_CLARINET_Pin);
-
-	orchestraVoice = 0;
-	orchestraVoice |= (dinFlute8 << 0);
-	orchestraVoice |= (dinFlute4 << 1);
-	orchestraVoice |= (dinViolin << 2);
-	orchestraVoice |= (dinTrumpet << 3);
-	orchestraVoice |= (dinClarinet << 4);
-
+	const uint8_t orchestraVoice = DIN_CONTROLS_PORT->IDR & DIN_ORCHESTRA_MASK;
 	wave_organ_set_voice(orchestraVoice);
+
+//	const uint8_t effectVoice = DIN_CONTROLS_PORT->IDR >> 7 & 0b00111111;
+//	wave_organ_set_effect(effectVoice);
 }
 
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset) {

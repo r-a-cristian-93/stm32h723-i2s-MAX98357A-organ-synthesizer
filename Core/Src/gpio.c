@@ -49,7 +49,6 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -62,31 +61,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = DIN_ORCHESTRA_FLUTE_8_Pin|DIN_ORCHESTRA_FLUTE_4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PDPin PDPin PDPin PDPin
-                           PDPin PDPin */
-  GPIO_InitStruct.Pin = DIN_ORCHESTRA_VIOLIN_Pin|DIN_ORCHESTRA_TRUMPET_Pin|DIN_ORCHESTRA_CLARINET_Pin|DIN_VIBRATO_ON_OFF_Pin
-                          |DIN_EFFECT_SYNTH_WAH_Pin|DIN_EFFECT_ORCHESTRA_CANCEL_Pin;
+                           PDPin PDPin PDPin PDPin
+                           PDPin PDPin PDPin PDPin
+                           PDPin */
+  GPIO_InitStruct.Pin = DIN_EFFECT_PIANNO_Pin|DIN_EFFECT_HARPSICORD_Pin|DIN_EFFECT_ECHO_BELLS_Pin|DIN_EFFECT_SYNTH_WAH_Pin
+                          |DIN_EFFECT_ORCHESTRA_CANCEL_Pin|DIN_ORCHESTRA_FLUTE_8_Pin|DIN_ORCHESTRA_FLUTE_4_Pin|DIN_ORCHESTRA_VIOLIN_Pin
+                          |DIN_ORCHESTRA_TRUMPET_Pin|DIN_ORCHESTRA_CLARINET_Pin|DIN_VIBRATO_ON_OFF_Pin|DIN_VIBRATO_DELAY_Pin
+                          |DIN_EFFECT_PERCUSSION_4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PCPin PCPin PCPin */
-  GPIO_InitStruct.Pin = DIN_VIBRATO_DELAY_Pin|DIN_EFFECT_PERCUTION_4_Pin|DIN_EFFECT_ECHO_BELLS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PAPin PAPin */
-  GPIO_InitStruct.Pin = DIN_EFFECT_PIANO_Pin|DIN_EFFECT_HARPSICORD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
