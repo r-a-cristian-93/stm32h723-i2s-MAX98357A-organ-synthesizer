@@ -150,6 +150,7 @@ uint8_t orchestraVoice = 0;
 
 #define DIN_CONTROLS_PORT GPIOD
 #define DIN_ORCHESTRA_MASK (0b00011111)
+#define DIN_EFFECT_MASK (0b00011111)
 
 void readDigitalInputs() {
 	const uint8_t effectOrchestraCancel = !(DIN_CONTROLS_PORT->IDR >> 12 & 0b00000001);
@@ -157,9 +158,8 @@ void readDigitalInputs() {
 	const uint8_t orchestraVoice = ( DIN_CONTROLS_PORT->IDR & DIN_ORCHESTRA_MASK ) * effectOrchestraCancel;
 	wave_organ_set_voice(orchestraVoice);
 
-
-//	const uint8_t effectVoice = DIN_CONTROLS_PORT->IDR >> 7 & 0b00111111;
-//	wave_organ_set_effect(effectVoice);
+	const uint8_t effectVoice = ( DIN_CONTROLS_PORT->IDR >> 7 ) & DIN_EFFECT_MASK;
+	wave_organ_set_effect(effectVoice);
 }
 
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset) {
