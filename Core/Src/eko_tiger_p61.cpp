@@ -181,30 +181,50 @@ void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t note
 }
 
 
-#define ADC_BUFFER_SIZE (2)
+#define ADC_BUFFER_SIZE (4)
 uint32_t adcBuffer[ADC_BUFFER_SIZE] = {0};
-uint8_t paramRotarySpeed = 0;
-uint8_t paramOrchestraInstrument = 0;
 uint8_t paramBassVolume = 0;
+uint8_t paramAccompVolume = 0;
+uint8_t paramVibrato = 0;
+uint8_t paramSustain = 0;
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
+	uint32_t adcBassVolume = adcBuffer[0] >> 9;
+	uint32_t adcAccompVolume = adcBuffer[1] >> 9;
+	uint32_t adcVibrato = adcBuffer[2] >> 9;
+	uint32_t adcSustain = adcBuffer[3] >> 9;
 
-	uint32_t adcBassValue = adcBuffer[0] >> 9;
-	uint32_t adcRotaryValue = adcBuffer[1] >> 9;
-
-	if (adcBassValue != paramBassVolume)
+	if (adcBassVolume != paramBassVolume)
 	{
-		paramBassVolume = (uint8_t) adcBassValue;
+		paramBassVolume = (uint8_t) adcBassVolume;
 		wave_organ_set_bass_volume(paramBassVolume);
 
 		ledToggle();
 	}
 
-	if (adcRotaryValue != paramRotarySpeed)
+	if (adcAccompVolume != paramAccompVolume)
 	{
-		paramRotarySpeed = (uint8_t) adcRotaryValue;
-		rotary_speaker_set_speed(paramRotarySpeed);
+		paramAccompVolume = (uint8_t) adcAccompVolume;
+		wave_organ_set_orchestra_volume(paramAccompVolume);
+
+		ledToggle();
+	}
+
+	if (adcVibrato != paramVibrato)
+	{
+		paramVibrato = (uint8_t) adcVibrato;
+		rotary_speaker_set_speed(paramVibrato);
+
+		ledToggle();
+	}
+
+	if (adcSustain != paramSustain)
+	{
+		paramSustain = (uint8_t)adcSustain;
+
+		// TO DO: change this with appropriate function
+		wave_organ_set_lpf(adcSustain);
 
 		ledToggle();
 	}
