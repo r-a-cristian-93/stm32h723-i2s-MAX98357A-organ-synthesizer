@@ -112,20 +112,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     /* ADC1 clock enable */
     __HAL_RCC_ADC12_CLK_ENABLE();
 
-    __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**ADC1 GPIO Configuration
-    PC1     ------> ADC1_INP11
+    PA0     ------> ADC1_INP16
     PA1     ------> ADC1_INP17
     PA2     ------> ADC1_INP14
     PA3     ------> ADC1_INP15
     */
-    GPIO_InitStruct.Pin = ADC_VIBRATO_SPEED_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(ADC_VIBRATO_SPEED_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = ADC_SUSTAIN_Pin|ADC_BASS_VOLUME_Pin|ADC_ACCOMP_VOLUME_Pin;
+    GPIO_InitStruct.Pin = ADC1_BASS_VOLUME_Pin|ADC1_ACCOMP_VOLUME_Pin|ADC1_VIBRATO_Pin|ADC1_SUSTAIN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -167,14 +161,12 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
     __HAL_RCC_ADC12_CLK_DISABLE();
 
     /**ADC1 GPIO Configuration
-    PC1     ------> ADC1_INP11
+    PA0     ------> ADC1_INP16
     PA1     ------> ADC1_INP17
     PA2     ------> ADC1_INP14
     PA3     ------> ADC1_INP15
     */
-    HAL_GPIO_DeInit(ADC_VIBRATO_SPEED_GPIO_Port, ADC_VIBRATO_SPEED_Pin);
-
-    HAL_GPIO_DeInit(GPIOA, ADC_SUSTAIN_Pin|ADC_BASS_VOLUME_Pin|ADC_ACCOMP_VOLUME_Pin);
+    HAL_GPIO_DeInit(GPIOA, ADC1_BASS_VOLUME_Pin|ADC1_ACCOMP_VOLUME_Pin|ADC1_VIBRATO_Pin|ADC1_SUSTAIN_Pin);
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
