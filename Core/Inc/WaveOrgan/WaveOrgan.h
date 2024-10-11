@@ -79,8 +79,8 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
         }
 
         // piano
-		float envelopeAmpl = envelope_get_amplitude(&wav_notes[noteIndex]) * 127;
-        sample += (int32_t)((float)wav_active_effect[(uint16_t) wav_phase[noteIndex]] * envelopeAmpl);
+		float envelopeAmpl = envelope_get_amplitude(&wav_notes[noteIndex]);
+        sample += (int32_t)((float)wav_active_effect[(uint16_t) wav_phase[noteIndex]] * envelopeAmpl * wav_orchestra_volume);
 
         // lpf
         sample = lpf.getSample(sample);

@@ -181,7 +181,7 @@ void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t note
 }
 
 
-#define ADC_BUFFER_SIZE (4)
+#define ADC_BUFFER_SIZE (16)
 uint32_t adcBuffer[ADC_BUFFER_SIZE] = {0};
 uint8_t paramBassVolume = 0;
 uint8_t paramAccompVolume = 0;
@@ -190,10 +190,15 @@ uint8_t paramSustain = 0;
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	uint32_t adcBassVolume = adcBuffer[0] >> 9;
-	uint32_t adcAccompVolume = adcBuffer[1] >> 9;
-	uint32_t adcVibrato = adcBuffer[2] >> 9;
-	uint32_t adcSustain = adcBuffer[3] >> 9;
+	// DO NOTHING
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	uint32_t adcVibrato = adcBuffer[0] >> 9;
+	uint32_t adcSustain = adcBuffer[1] >> 9;
+	uint32_t adcBassVolume = adcBuffer[2] >> 9;
+	uint32_t adcAccompVolume = adcBuffer[3] >> 9;
 
 	if (adcBassVolume != paramBassVolume)
 	{
@@ -228,11 +233,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 
 		ledToggle();
 	}
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-	// DO NOTHING
 }
 
 void eko_tiger_p61_setup()
