@@ -253,7 +253,7 @@ void eko_tiger_p61_setup()
 	envelope_initialize();
 	sequencer_init();
 	ledInit();
-    SoftClip_Init(&softClip, 2047, 2.0);
+    SoftClip_Init(&softClip, 16383, 2.0);
 
 
 	HAL_TIM_Base_Start(&htim6);
