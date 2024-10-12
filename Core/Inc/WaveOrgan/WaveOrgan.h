@@ -97,7 +97,7 @@ int32_t wave_organ_generate_sample()
     //   voice * vol * inst * keys
     // ( 32767 * 127 *  3   *  20 ) >> 13 = 30479
 	// ( 32767 * 127 *  3   *  10 ) >> 12 = 30479
-    sample = sample >> 11;
+    sample = sample >> 10;
 
     // lpf
     sample = lpf.getSample(sample);

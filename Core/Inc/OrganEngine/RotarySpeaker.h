@@ -17,17 +17,17 @@ void rotary_speaker_initialize();
 void rotary_speaker_set_speed(uint8_t midiParam);
 
 // inline
-int16_t rotary_speaker_process_sample(int16_t input);
+int32_t rotary_speaker_process_sample(int32_t input);
 void rotary_speaker_lfo_advance();
 
 __attribute__((always_inline)) inline
-int16_t rotary_speaker_process_sample(int16_t input)
+int32_t rotary_speaker_process_sample(int32_t input)
 {
-    const int16_t vibratoLfoValue = (float) (sine_table_lfo[(int)(rotarySpeaker_lfoPhase)]);
+    const int16_t vibratoLfoValue = (float) (sine_table_lfo[(int32_t)(rotarySpeaker_lfoPhase)]);
     const float delay = vibratoLfoValue * BASE_DELAY_SEC + rotarySpeaker_additionalDelay;
 
     // Vibrato
-    int16_t output = rotarySpeaker_ringBuffer.getHermiteAt(delay);
+    int32_t output = rotarySpeaker_ringBuffer.getHermiteAt(delay);
 
     // Tremolo
     output = (output * rotary_table_lfo[(int)(rotarySpeaker_lfoPhase)]) >> 15;
