@@ -25,9 +25,9 @@ void SoftClip_Init(SoftClip* softClip, int32_t minValue, int32_t ratio)
 int32_t SoftClip_ProcessSample(SoftClip* softClip, int32_t sample)
 {
     if (sample < -MAX_INPUT_VALUE)
-        return -softClip->table[MAX_INPUT_VALUE - 1];
+        return -softClip->table[MAX_INPUT_VALUE];
     if (sample > MAX_INPUT_VALUE)
-        return softClip->table[MAX_INPUT_VALUE - 1];
+        return softClip->table[MAX_INPUT_VALUE];
 
     if (sample < 0)
         return -softClip->table[-sample];

@@ -43,13 +43,17 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		sample = rotary_speaker_process_sample(sample);
 
 	    sample = SoftClip_ProcessSample(&softClip, sample);
+	    sample_buff[iFrame] = sample;
+
 
 	    // +-32767 >> 4 = +-2047
 		sample = sample >> 4;
 
 		// +-2047 + 0x7FF = 0_4095
-		uint32_t u_sample = (uint32_t) sample + (0x7FF);
-		sample_buff[iFrame] = u_sample;
+		sample = sample + 0x7FF;
+
+		uint32_t u_sample = (uint32_t) sample;
+//		sample_buff[iFrame] = u_sample;
 
         output[iFrame] = u_sample;
 	}
