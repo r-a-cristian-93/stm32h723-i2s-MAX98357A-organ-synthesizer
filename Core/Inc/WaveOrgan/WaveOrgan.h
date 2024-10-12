@@ -10,10 +10,6 @@
 #endif
 
 #include <cstdint>
-
-constexpr uint8_t VOICES_COUNT = 5;
-
-#include <cstdint>
 #include <math.h>
 #include <WaveOrgan/orchestra/flute4.h>
 #include <WaveOrgan/orchestra/flute8.h>
@@ -28,14 +24,16 @@ constexpr uint8_t VOICES_COUNT = 5;
 #include <WaveOrgan/effects/harpsi.h>
 #include <WaveOrgan/effects/bells.h>
 #include <WaveOrgan/effects/synth.h>
+#include <WaveOrgan/SoftClip.h>
 
 struct LPF {
     int32_t output = 0.0;
-    uint8_t alpha = 110;
+    int32_t alpha = 110;
 
     int32_t getSample(int32_t input) {
 
-        output = ((127 - alpha) * input + alpha * output) >> 7;
+        output = (127 - alpha) * input + alpha * output;
+        output = output >> 7;
 
         return output;
     }
@@ -61,7 +59,8 @@ void fill_voice_combinations();
 void fill_effect_combinations();
 
 
-__attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
+__attribute__((always_inline)) inline
+int32_t wave_organ_generate_sample()
 {
 	int32_t sample = 0;
 
@@ -82,9 +81,6 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
 		float envelopeAmpl = envelope_get_amplitude(&wav_notes[noteIndex]);
         sample += (int32_t)((float)wav_active_effect[(uint16_t) wav_phase[noteIndex]] * envelopeAmpl * wav_orchestra_volume);
 
-        // lpf
-        sample = lpf.getSample(sample);
-
 		wav_phase[noteIndex] += wav_phaseIncrement[noteIndex];
 
         while (wav_phase[noteIndex] >= LUT_SIZE)
@@ -100,7 +96,13 @@ __attribute__((always_inline)) inline int32_t wave_organ_generate_sample()
 
     //   voice * vol * inst * keys
     // ( 32767 * 127 *  3   *  20 ) >> 13 = 30479
-	return sample >> 13;
+	// ( 32767 * 127 *  3   *  10 ) >> 12 = 30479
+    sample = sample >> 11;
+
+    // lpf
+    sample = lpf.getSample(sample);
+
+	return sample;
 }
 
 __attribute__((always_inline)) inline
@@ -115,7 +117,7 @@ void wave_organ_init()
     fill_voice_combinations();
     fill_effect_combinations();
     wave_organ_set_voice(1);
-    wave_organ_set_effect(0);
+    wave_organ_set_effect(1);
 }
 
 __attribute__((always_inline)) inline

@@ -101,3 +101,4 @@ void wave_organ_set_effect(uint8_t effectIndex)
 		wav_active_effect = effect_lut[effectIndex];
 }
 
+

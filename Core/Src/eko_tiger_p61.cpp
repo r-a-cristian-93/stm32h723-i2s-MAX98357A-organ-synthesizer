@@ -19,12 +19,14 @@
 uint32_t timBlink = 0;
 uint32_t timSpi = 0;
 uint32_t timDigitalInputs = 0;
+SoftClip softClip = {};
 
 
 #define BUFF_LEN 128
 #define BUFF_LEN_DIV2 64
 
 uint32_t	audio_buff[BUFF_LEN];
+int32_t 	sample_buff[BUFF_LEN] = {0};
 
 __attribute((always_inline)) inline
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset);
@@ -39,11 +41,15 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		sequencer_tick();
 		sample = wave_organ_generate_sample();
 		sample = rotary_speaker_process_sample(sample);
-//		sample += drum_machine_generate_sample();
-//
-//		sample = sample >> 1;
 
+	    sample = SoftClip_ProcessSample(&softClip, sample);
+
+	    // +-32767 >> 4 = +-2047
+		sample = sample >> 4;
+
+		// +-2047 + 0x7FF = 0_4095
 		uint32_t u_sample = (uint32_t) sample + (0x7FF);
+		sample_buff[iFrame] = u_sample;
 
         output[iFrame] = u_sample;
 	}
@@ -247,6 +253,7 @@ void eko_tiger_p61_setup()
 	envelope_initialize();
 	sequencer_init();
 	ledInit();
+    SoftClip_Init(&softClip, 2047, 2.0);
 
 
 	HAL_TIM_Base_Start(&htim6);
