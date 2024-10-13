@@ -24,6 +24,7 @@ SoftClip softClip = {};
 #define BUFF_LEN_DIV2 64
 
 uint32_t	audio_buff[BUFF_LEN];
+uint8_t        effect_chorus = 0;
 
 __attribute((always_inline)) inline
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset);
@@ -37,7 +38,11 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame++)
 	{
 		sample = wave_organ_generate_sample();
-		sample = rotary_speaker_process_sample(sample);
+
+		if (effect_chorus != 0)
+			sample += rotary_speaker_process_sample(sample);
+		else
+			sample = rotary_speaker_process_sample(sample);
 
 	    sample = SoftClip_ProcessSample(&softClip, sample);
 
@@ -159,11 +164,18 @@ uint8_t orchestraVoice = 0;
 void readDigitalInputs() {
 	const uint8_t effectOrchestraCancel = !(DIN_CONTROLS_PORT->IDR >> 12 & 0b00000001);
 
-	const uint8_t orchestraVoice = ( DIN_CONTROLS_PORT->IDR & DIN_ORCHESTRA_MASK ) * effectOrchestraCancel;
+	const uint8_t orchestraVoice = (DIN_CONTROLS_PORT->IDR & DIN_ORCHESTRA_MASK) * effectOrchestraCancel;
 	wave_organ_set_voice(orchestraVoice);
 
-	const uint8_t effectVoice = ( DIN_CONTROLS_PORT->IDR >> 7 ) & DIN_EFFECT_MASK;
+	const uint8_t effectVoice = DIN_CONTROLS_PORT->IDR >> 7 & DIN_EFFECT_MASK;
 	wave_organ_set_effect(effectVoice);
+
+	const uint8_t effectVibratoDepth = DIN_CONTROLS_PORT->IDR >> 6 & 0b00000001;
+	const uint8_t midiParamVibratoDepth = effectVibratoDepth * 127;
+	rotary_speaker_set_depth(midiParamVibratoDepth);
+
+	const uint8_t effectChorus = !(DIN_CONTROLS_PORT->IDR >> 5 & 0b00000001);
+	effect_chorus = effectChorus;
 }
 
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset) {

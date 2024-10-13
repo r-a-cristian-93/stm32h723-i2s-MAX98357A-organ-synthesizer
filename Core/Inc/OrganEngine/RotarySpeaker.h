@@ -15,9 +15,11 @@ extern RingBuffer  rotarySpeaker_ringBuffer;
 
 extern float       rotarySpeaker_lfoPhase;
 extern float       rotarySpeaker_lfoPhaseIncrement;
+extern float       rotarySpeaket_depth;
 
 void rotary_speaker_initialize();
 void rotary_speaker_set_speed(uint8_t midiParam);
+void rotary_speaker_set_depth(uint8_t midiParam);
 
 // inline
 int32_t rotary_speaker_process_sample(int32_t input);
@@ -27,7 +29,7 @@ __attribute__((always_inline)) inline
 int32_t rotary_speaker_process_sample(int32_t input)
 {
     const int16_t vibratoLfoValue = (float) (sine_table_lfo[(int32_t)(rotarySpeaker_lfoPhase)]);
-    const float delay = vibratoLfoValue * BASE_DELAY_SEC + rotarySpeaker_additionalDelay;
+    const float delay = vibratoLfoValue * rotarySpeaket_depth * BASE_DELAY_SEC + rotarySpeaker_additionalDelay;
 
     // Vibrato
     int32_t output = rotarySpeaker_ringBuffer.getHermiteAt(delay);
