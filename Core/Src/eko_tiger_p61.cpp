@@ -13,8 +13,6 @@
 #include <OrganEngine/RotarySpeaker.h>
 #include <OrganEngine/WaveTables.h>
 #include <WaveOrgan/WaveOrgan.h>
-#include <DrumMachine/DrumMachine.h>
-#include <DrumMachine/Sequencer.h>
 
 uint32_t timBlink = 0;
 uint32_t timSpi = 0;
@@ -26,7 +24,6 @@ SoftClip softClip = {};
 #define BUFF_LEN_DIV2 64
 
 uint32_t	audio_buff[BUFF_LEN];
-int32_t 	sample_buff[BUFF_LEN] = {0};
 
 __attribute((always_inline)) inline
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset);
@@ -35,16 +32,14 @@ __attribute((always_inline)) inline
 void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 {
 	int32_t sample = 0;
+	uint32_t u_sample = 0;
 
 	for (uint16_t iFrame = startFrame; iFrame < endFrame; iFrame++)
 	{
-		sequencer_tick();
 		sample = wave_organ_generate_sample();
 		sample = rotary_speaker_process_sample(sample);
 
 	    sample = SoftClip_ProcessSample(&softClip, sample);
-	    sample_buff[iFrame] = sample;
-
 
 	    // +-32767 >> 4 = +-2047
 		sample = sample >> 4;
@@ -52,8 +47,7 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		// +-2047 + 0x7FF = 0_4095
 		sample = sample + 0x7FF;
 
-		uint32_t u_sample = (uint32_t) sample;
-//		sample_buff[iFrame] = u_sample;
+		u_sample = (uint32_t) sample;
 
         output[iFrame] = u_sample;
 	}
@@ -255,7 +249,6 @@ void eko_tiger_p61_setup()
 	rotary_speaker_initialize();
 	wave_organ_init();
 	envelope_initialize();
-	sequencer_init();
 	ledInit();
     SoftClip_Init(&softClip, 16383, 3);
 

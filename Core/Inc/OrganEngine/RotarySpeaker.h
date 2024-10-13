@@ -7,7 +7,7 @@
 
 #define BASE_DELAY_SEC (0.002)
 
-extern int         rotarySpeaker_additionalDelay;
+extern float       rotarySpeaker_additionalDelay;
 extern RingBuffer  rotarySpeaker_ringBuffer;
 
 extern float       rotarySpeaker_lfoPhase;

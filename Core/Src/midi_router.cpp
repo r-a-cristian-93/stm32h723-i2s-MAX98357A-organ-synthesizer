@@ -7,8 +7,6 @@
 
 #include <WaveOrgan/WaveOrgan.h>
 #include <OrganEngine/RotarySpeaker.h>
-#include <DrumMachine/DrumMachine.h>
-#include <DrumMachine/Sequencer.h>
 
 #define USB_MIDI_MSG_LENGTH 4
 
@@ -44,8 +42,6 @@ uint8_t message;
 uint8_t param1;
 uint8_t param2;
 
-#define DRUM_CHANNEL (1)
-
 void MIDI_ProcessIncomming(void)
 {
   if (buffUsbInCurrIndex == buffUsbInNextIndex)
@@ -62,10 +58,6 @@ void MIDI_ProcessIncomming(void)
   switch (message) {
 	  case MIDI_MESSAGE_NOTE_ON:
 		  wav_organ_note_on(param1);
-
-		  if (channel == DRUM_CHANNEL) {
-			  drum_machine_play(param1, param2);
-		  }
 	  break;
 	  case MIDI_MESSAGE_NOTE_OFF:
 		  wav_organ_note_off(param1);
@@ -84,10 +76,6 @@ void MIDI_ProcessIncomming(void)
 			  wave_organ_set_lpf(param2);
 		  else if (param1 == MIDI_MESSAGE_ROTARY_SPEED)
 			  rotary_speaker_set_speed(param2);
-		  else if (param1 == MIDI_MESSAGE_RHYTHM_SELECT)
-			  sequencer_set_sequence(param2);
-		  else if (param1 == MIDI_MESSAGE_RHYTHM_TEMPO)
-			  sequencer_set_bpm(param2*4);
 	  }
 	  break;
 	  default:

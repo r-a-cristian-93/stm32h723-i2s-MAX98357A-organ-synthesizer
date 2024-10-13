@@ -8,7 +8,7 @@
 #define MAX_MIDI_VALUE (127)
 
 
-int         rotarySpeaker_additionalDelay = 3;
+float       rotarySpeaker_additionalDelay = 3;
 RingBuffer  rotarySpeaker_ringBuffer;
 
 float       rotarySpeaker_lfoPhase;

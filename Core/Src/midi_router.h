@@ -30,9 +30,6 @@ extern "C" {
 #define MIDI_MESSAGE_BASS_VOLUME       0x15
 #define MIDI_MESSAGE_LPF               0x16
 #define MIDI_MESSAGE_ROTARY_SPEED      0x5C
-#define MIDI_MESSAGE_RHYTHM_SELECT     0x6E // 110
-#define MIDI_MESSAGE_RHYTHM_TEMPO      0x6F // 111
-#define MIDI_MESSAGE_RHYTHM_VOLUME     0x70 // 112
 
 
 #define MIDI_MESSAGE_TIMING_CLOCK   0xF8
