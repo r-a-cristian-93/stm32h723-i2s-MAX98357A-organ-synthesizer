@@ -1,6 +1,9 @@
 #ifndef VIBRATO_PROCESSOR_H
 #define VIBRATO_PROCESSOR_H
 
+// From BerVibrato
+// https://github.com/Bershov/Vibrato-effect/tree/master
+
 #include <OrganEngine/Config.h>
 #include <OrganEngine/RingBuffer.h>
 #include <OrganEngine/WaveTables.h>

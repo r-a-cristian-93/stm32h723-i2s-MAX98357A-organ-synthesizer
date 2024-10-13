@@ -1,5 +1,8 @@
 #include "RingBuffer.h"
 
+// From BerVibrato
+// https://github.com/Bershov/Vibrato-effect/tree/master
+
 RingBuffer::RingBuffer()
 : writeIndex(0), size(0)
 {}

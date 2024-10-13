@@ -1,6 +1,9 @@
 #ifndef __RINGBUFFER_H
 #define __RINGBUFFER_H
 
+// From BerVibrato
+// https://github.com/Bershov/Vibrato-effect/tree/master
+
 #ifdef _MSC_VER
 #define INLINE __forceinline
 #else
@@ -10,7 +13,8 @@
 #include <vector>
 #include <cstdint>
 
-// Hermite polynomial interpolation. More points - better response at high frequencies
+// Hermite polynomial interpolation.
+// More points - better response at high frequencies
 __attribute__((always_inline)) inline
 int32_t getSampleHermite4p3o(float x, int32_t *y)
 {

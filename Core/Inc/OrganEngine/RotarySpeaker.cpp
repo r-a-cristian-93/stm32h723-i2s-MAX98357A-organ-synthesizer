@@ -1,5 +1,8 @@
 #include "RotarySpeaker.h"
 
+// From BerVibrato
+// https://github.com/Bershov/Vibrato-effect/tree/master
+
 #define ROTARY_SPEAKER_FAST (6.0 * PHASE_LUT_SCALE_FACTOR)
 #define ROTARY_SPEAKER_SLOW (2.0 * PHASE_LUT_SCALE_FACTOR)
 #define ROTARY_SPEAKER_OFF (0.0)
