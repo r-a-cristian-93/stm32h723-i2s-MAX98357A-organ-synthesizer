@@ -13,6 +13,7 @@
 #include <OrganEngine/RotarySpeaker.h>
 #include <OrganEngine/WaveTables.h>
 #include <WaveOrgan/WaveOrgan.h>
+#include <WaveOrgan/Envelope.h>
 
 uint32_t timBlink = 0;
 uint32_t timSpi = 0;
@@ -243,9 +244,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	if (adcSustain != paramSustain)
 	{
 		paramSustain = (uint8_t)adcSustain;
-
-		// TO DO: change this with appropriate function
-		wave_organ_set_lpf(adcSustain);
+		envelope_set_release_rate(paramSustain);
 
 		ledToggle();
 	}
