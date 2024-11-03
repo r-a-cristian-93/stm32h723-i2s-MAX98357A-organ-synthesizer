@@ -43,7 +43,7 @@ void MX_I2S2_Init(void)
   hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
   hi2s2.Init.DataFormat = I2S_DATAFORMAT_16B;
   hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-  hi2s2.Init.AudioFreq = I2S_AUDIOFREQ_8K;
+  hi2s2.Init.AudioFreq = 44100;
   hi2s2.Init.CPOL = I2S_CPOL_LOW;
   hi2s2.Init.FirstBit = I2S_FIRSTBIT_MSB;
   hi2s2.Init.WSInversion = I2S_WS_INVERSION_DISABLE;
@@ -73,13 +73,13 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* i2sHandle)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.PLL2.PLL2M = 25;
-    PeriphClkInitStruct.PLL2.PLL2N = 172;
+    PeriphClkInitStruct.PLL2.PLL2M = 5;
+    PeriphClkInitStruct.PLL2.PLL2N = 124;
     PeriphClkInitStruct.PLL2.PLL2P = 8;
     PeriphClkInitStruct.PLL2.PLL2Q = 2;
     PeriphClkInitStruct.PLL2.PLL2R = 2;
-    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
-    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
+    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
     PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
     PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
@@ -91,17 +91,25 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* i2sHandle)
     __HAL_RCC_SPI2_CLK_ENABLE();
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     /**I2S2 GPIO Configuration
-    PB10     ------> I2S2_CK
-    PB12     ------> I2S2_WS
     PB14     ------> I2S2_SDI
+    PA9     ------> I2S2_CK
+    PB9     ------> I2S2_WS
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_12|GPIO_PIN_14;
+    GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_9;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /* I2S2 DMA Init */
     /* SPI2_RX Init */
@@ -140,11 +148,13 @@ void HAL_I2S_MspDeInit(I2S_HandleTypeDef* i2sHandle)
     __HAL_RCC_SPI2_CLK_DISABLE();
 
     /**I2S2 GPIO Configuration
-    PB10     ------> I2S2_CK
-    PB12     ------> I2S2_WS
     PB14     ------> I2S2_SDI
+    PA9     ------> I2S2_CK
+    PB9     ------> I2S2_WS
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10|GPIO_PIN_12|GPIO_PIN_14);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14|GPIO_PIN_9);
+
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9);
 
     /* I2S2 DMA DeInit */
     HAL_DMA_DeInit(i2sHandle->hdmarx);
