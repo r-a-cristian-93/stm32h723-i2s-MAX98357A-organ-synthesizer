@@ -24,6 +24,7 @@ SoftClip softClip = {};
 #define BUFF_LEN 128
 #define BUFF_LEN_DIV2 64
 
+uint32_t	drums_buff[BUFF_LEN] = {0};
 uint32_t	audio_buff[BUFF_LEN];
 uint8_t        effect_chorus = 0;
 
@@ -54,6 +55,7 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		sample = sample + 0x7FF;
 
 		u_sample = (uint32_t) sample;
+		u_sample = u_sample + drums_buff[iFrame];
 
         output[iFrame] = u_sample;
 	}
@@ -68,6 +70,9 @@ void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
 	getSamples(audio_buff, BUFF_LEN_DIV2, BUFF_LEN);
 }
+
+//void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s);
+//void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s);
 
 __attribute((always_inline)) inline
 bool areAllEqual(const uint16_t* array) {
@@ -267,6 +272,7 @@ void eko_tiger_p61_setup()
 	HAL_TIM_Base_Start(&htim6);
 	HAL_TIM_Base_Start(&htim7);
 	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, audio_buff, BUFF_LEN, DAC_ALIGN_12B_R);
+	HAL_I2S_Receive_DMA(hi2s2, drums_buff, BUFF_LEN);
 
 	HAL_ADCEx_Calibration_Start(&hadc1,  ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED);
 	HAL_ADC_Start_DMA(&hadc1, adcBuffer, ADC_BUFFER_SIZE);
