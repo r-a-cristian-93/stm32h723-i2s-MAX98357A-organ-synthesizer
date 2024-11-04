@@ -32,6 +32,8 @@ uint8_t        effect_chorus = 0;
 __attribute((always_inline)) inline
 void handleBitsChange(uint16_t* dataArray, uint16_t* prevBitsArray, uint8_t noteOffset);
 
+LPF drum_lpf;
+
 __attribute((always_inline)) inline
 void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 {
@@ -56,7 +58,9 @@ void getSamples(uint32_t* output, uint16_t startFrame, uint16_t endFrame)
 		sample = sample + 0x7FF;
 
 		u_sample = (uint32_t) sample;
-		u_sample = u_sample + drums_buff[iFrame];
+		uint16_t drum_sample = drums_buff[iFrame];
+//		drum_sample = drum_lpf.getSample(drum_sample);
+		u_sample = u_sample + drum_sample;
 
         output[iFrame] = u_sample;
 	}
